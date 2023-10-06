@@ -1,0 +1,13 @@
+ipykernel==6.15.0
+pandas==2.0.1
+dash_leaflet==1.0.8
+pymysql==1.0.3
+plotly==5.14.1
+SQLAlchemy==2.0.13
+cryptography==38.0.0
+natsort==8.4.0
+reportlab==4.0.4
+kaleido==0.1.0post1
+geopy==2.4.0
+bingmaps==0.3.7
+aiohttp==3.8.5
