@@ -1,8 +1,8 @@
-CREATE DATABASE  IF NOT EXISTS `tfgfelipe2` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `tfgfelipe2`;
+CREATE DATABASE  IF NOT EXISTS `TFG_FELIPE_LLINARES` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `TFG_FELIPE_LLINARES`;
 -- MySQL dump 10.13  Distrib 8.0.28, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: tfgfelipe
+-- Host: 127.0.0.1    Database: TFG_FELIPE_LLINARES
 -- ------------------------------------------------------
 -- Server version	8.0.28
 

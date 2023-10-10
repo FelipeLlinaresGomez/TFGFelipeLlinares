@@ -273,8 +273,9 @@ def generar_layout_login():
                 html.Button("Iniciar Sesión", id="login-button", n_clicks=0, style={"background-color": "#002b73", "color": "#fbfbfb"}),
             ],
             className="row",
-            style={"margin": "0 auto", "display": "block", "width": "300px", "text-align": "center", "margin-bottom": "150px"}
+            style={"margin": "0 auto", "display": "block", "width": "300px", "text-align": "center", "margin-bottom": "30px"}
         ),
+        html.H6(id="login-error-message", style= {"text-align": "center", "color":"red" ,"margin-bottom": "120px", "font-family": "HelveticaNeue, sans-serif"}),
         generar_footer()
     ],
     id='layout-login',

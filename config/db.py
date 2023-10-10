@@ -4,5 +4,5 @@ mydb = pymysql.connect(
             host='localhost',
             user='TFGuser',
             passwd='TFGpasswordtfg1',
-            db='tfgfelipe'
+            db='tfg_felipe_llinares'
         )
