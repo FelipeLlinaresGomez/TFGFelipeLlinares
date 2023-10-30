@@ -8,7 +8,9 @@ def comprobar_constraseña(username, password):
     values_query = (username)
     cursor.execute(select_query, values_query)
     result = cursor.fetchone()
-
+    
+    if result is None:
+        return -1
     salt = result[0]
     contraseña = result[1]
     administrador = result[2]  

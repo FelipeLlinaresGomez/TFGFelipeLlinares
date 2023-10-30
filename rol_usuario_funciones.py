@@ -11,11 +11,11 @@ from dash import dcc
 from config.db import mydb
 import dash_leaflet as dl
 
-opciones_dropdown_tramos = [
+opciones_tramos = [
     "Mañana", "Tarde", "Noche"
 ]
 
-opciones_dropdown_meses = [
+opciones_meses = [
     "Enero", "Febrero", "Marzo", "Abril",
     "Mayo", "Junio", "Julio", "Agosto",
     "Septiembre", "Octubre", "Noviembre", "Diciembre"
@@ -41,6 +41,11 @@ def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, 
     try:
         todaInformacion = df
 
+        if todaInformacion is None or todaInformacion.size <= 0:
+            tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
+            layer_group = dl.LayerGroup([], id="layer-group")
+            return [tile_layer,layer_group], html.Div([]), html.Div([]), html.Div([]),html.Div([]), "No se disponen datos suficientes para mostrar", ""
+        
         if dropdownTramo is not None:
             todaInformacion = todaInformacion[todaInformacion["Tramo_horario"] == dropdownTramo]
 
@@ -52,7 +57,7 @@ def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, 
         
         indexDropdownMes = None
         if dropdownMes is not None:
-            indexDropdownMes = opciones_dropdown_meses.index(dropdownMes)
+            indexDropdownMes = opciones_meses.index(dropdownMes)
             todaInformacion = todaInformacion[todaInformacion['Mes'] == str(indexDropdownMes + 1)]
             tituloMes = "en " + dropdownMes 
         else:
@@ -74,7 +79,7 @@ def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, 
         #src = "https://umalaga.maps.arcgis.com/apps/instant/basic/index.html?appid=dff95ce7c4d54b5a9bfd90bba82045d9&level=10&extent=36.73931208030581,-4.463859509979803,36.70333080013165,-4.354425385110552"
         #fig1 = html.Iframe(src=src, width="100%", height="400px")
 
-        if todaInformacion.size > 0:
+        if todaInformacion is not None and todaInformacion.size > 0:
             #Fig1
             fig1 = create_graph_1(todaInformacion, indexDropdownMes, dropdownAnio)
 
@@ -114,7 +119,7 @@ def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, 
         traceback.print_exc()
         tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
         layer_group = dl.LayerGroup([], id="layer-group")
-        return [tile_layer,layer_group], html.Div([]), html.Div([]), html.Div([]), html.Div([]), ["Ha habido un error procesando los archivos", html.Br(), "Inténtelo de nuevo"], ""
+        return [tile_layer,layer_group], html.Div([]), html.Div([]), html.Div([]), html.Div([]), ["Ha habido un error generando las gráficas", html.Br(), "Inténtelo de nuevo"], ""
 
 def create_graph_1(df, dropdownMes, dropdownAnio):
     if dropdownAnio is None and dropdownMes is None:
@@ -139,7 +144,7 @@ def create_graph_1(df, dropdownMes, dropdownAnio):
         meses_data = all_Dias.merge(df.groupby(['Dia', 'Tramo_horario']).size().reset_index(name='Count'), how='left').fillna(0)
         meses_data = meses_data[meses_data['Tramo_horario'] != 0]
 
-        fig1 = px.line(meses_data , x='Dia', y='Count',  color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia diaria en {opciones_dropdown_meses[dropdownMes]} de {dropdownAnio} por tramo horario")
+        fig1 = px.line(meses_data , x='Dia', y='Count',  color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia diaria en {opciones_meses[dropdownMes]} de {dropdownAnio} por tramo horario")
     
     elif dropdownAnio is None and dropdownMes is not None:
         df['Año'] = df['Año'].astype(int)
@@ -148,7 +153,7 @@ def create_graph_1(df, dropdownMes, dropdownAnio):
         grouped = df.groupby(['Año', 'Tramo_horario']).size().reset_index(name='Count')
         grouped = all_years.merge(grouped, on=['Año'], how='left').fillna(0)
         grouped = (grouped[grouped['Tramo_horario'] != 0]).sort_values(by='Año')
-        fig1 = px.line(grouped , x='Año', y='Count', color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia anual de {opciones_dropdown_meses[dropdownMes]} por tramo horario")
+        fig1 = px.line(grouped , x='Año', y='Count', color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia anual de {opciones_meses[dropdownMes]} por tramo horario")
     
     return fig1 
 
@@ -179,7 +184,7 @@ def create_graph_2(df, dropdownMes, dropdownAnio):
         meses_data = (meses_data[meses_data['Distrito'] != 0])
         meses_data = (meses_data[meses_data['Count'] > 5]).sort_values(by='Dia')
 
-        fig2 = px.line(meses_data , x='Dia', y='Count',  color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia diaria en {opciones_dropdown_meses[dropdownMes]} de {dropdownAnio} por distrito")
+        fig2 = px.line(meses_data , x='Dia', y='Count',  color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia diaria en {opciones_meses[dropdownMes]} de {dropdownAnio} por distrito")
     
     elif dropdownAnio is None and dropdownMes is not None:
         df['Año'] = df['Año'].astype(int)
@@ -191,7 +196,7 @@ def create_graph_2(df, dropdownMes, dropdownAnio):
         grouped = (grouped[grouped['Distrito'] != 0])
         grouped = (grouped[grouped['Count'] > 20]).sort_values(by='Año')
        
-        fig2 = px.line(grouped , x='Año', y='Count', color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia anual de {opciones_dropdown_meses[dropdownMes]} por distrito")
+        fig2 = px.line(grouped , x='Año', y='Count', color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia anual de {opciones_meses[dropdownMes]} por distrito")
     
     return fig2
 
@@ -222,7 +227,7 @@ def create_graph_4(df, dropdownMes, dropdownAnio):
         meses_data = (meses_data[meses_data['Modus_operandi'] != 0])
         meses_data = (meses_data[meses_data['Count'] > 5]).sort_values(by='Dia')
 
-        fig4 = px.line(meses_data , x='Dia', y='Count',  color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia diaria en {opciones_dropdown_meses[dropdownMes]} de {dropdownAnio} por modus operandi")
+        fig4 = px.line(meses_data , x='Dia', y='Count',  color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia diaria en {opciones_meses[dropdownMes]} de {dropdownAnio} por modus operandi")
     
     elif dropdownAnio is None and dropdownMes is not None:
         df['Año'] = df['Año'].astype(int)
@@ -234,7 +239,7 @@ def create_graph_4(df, dropdownMes, dropdownAnio):
         grouped = (grouped[grouped['Modus_operandi'] != 0])
         grouped = (grouped[grouped['Count'] > 20]).sort_values(by='Año')
        
-        fig4 = px.line(grouped , x='Año', y='Count', color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia anual de {opciones_dropdown_meses[dropdownMes]} por modus operandi")
+        fig4 = px.line(grouped , x='Año', y='Count', color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia anual de {opciones_meses[dropdownMes]} por modus operandi")
     
     return fig4
 
@@ -252,7 +257,7 @@ def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, d
         
         indexDropdownMes = None
         if dropdownMes is not None:
-            indexDropdownMes = opciones_dropdown_meses.index(dropdownMes)
+            indexDropdownMes = opciones_meses.index(dropdownMes)
             todaInformacion = todaInformacion[todaInformacion['Mes'] == str(indexDropdownMes + 1)]
             tituloMes = "en " + dropdownMes 
         else:

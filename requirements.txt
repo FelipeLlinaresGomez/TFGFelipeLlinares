@@ -11,3 +11,5 @@ kaleido==0.1.0post1
 geopy==2.4.0
 bingmaps==0.3.7
 aiohttp==3.8.5
+jupyter==1.0.0
+python-dotenv==1.0.0

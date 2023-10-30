@@ -5,13 +5,10 @@ from io import StringIO
 from festividades_utils.festividades import get_festividad
 from config.db import mydb
 from cabeceras import *
-import aiohttp
 import asyncio
 import traceback
 import re
-
-API_KEY = 'Aj943_sLvTzpse2YFv4FZSC13eoEU4djhgLF5Qdq0CcSVpomrm15eZad759fjYQu'
-BASE_URL = "http://dev.virtualearth.net/REST/v1/Locations"
+import geocode_data as geocode
 
 def insert_data(contents):
     listdenuncias = np.zeros(len(contents))
@@ -54,7 +51,7 @@ def insert_data(contents):
                 df.loc[:, 'Año'] = None
             
             try:
-                geocoded_results = asyncio.run(geocode_dataframe_addresses(df))
+                geocoded_results = asyncio.run(geocode.geocode_dataframe_addresses(df))
 
                 df['Lat'] = [lat for lat,lon in geocoded_results]
                 df['Lon'] = [lon for lat,lon in geocoded_results]
@@ -78,40 +75,6 @@ def insert_data(contents):
         cursor.close()
 
     return listdenuncias
-
-async def geocode_address_bing_async(session, address):
-    try:
-        params = {
-            "q": address,
-            "key": API_KEY
-        }
-        async with session.get(BASE_URL, params=params) as response:
-            data = await response.json()
-
-            if data.get('resourceSets') and data['resourceSets'][0].get('resources'):
-                resource = data['resourceSets'][0]['resources'][0]
-                coordinates = resource['point']['coordinates']
-                return coordinates[0], coordinates[1]
-            else:
-                return "No informado", "No informado"
-    except Exception as e:
-        print(f"Error geocoding address: {e}")
-        return "No informado", "No informado"
-
-async def geocode_dataframe_addresses(df):
-    async with aiohttp.ClientSession() as session:
-        tasks = []
-        for index, row in df.iterrows():
-
-            tipo_via = row[LUGAR_HECHO_TIPO_VIA]
-            via = row[LUGAR_HECHO_VIA]
-            municipio = row[LUGAR_HECHO_MUNICIPIO]
-            provincia = row[LUGAR_HECHO_PROVINCIA]
-
-            address = f"{tipo_via} {via}, {municipio}, {provincia}"
-            tasks.append(geocode_address_bing_async(session, address))
-        geocoded_results = await asyncio.gather(*tasks)
-        return geocoded_results
 
 def insert_lugar(row, cursor):
     Tipo_via = row[LUGAR_HECHO_TIPO_VIA] if LUGAR_HECHO_TIPO_VIA in row.index else None
@@ -260,7 +223,7 @@ def insert_actuacion(row, cursor):
 def insert_responsable(row, cursor):
     DNI_responsable = str(row[RESPONSABLE_DNI]) if RESPONSABLE_DNI in row.index else None
 
-    if DNI_responsable is None or DNI_responsable is 'nan':
+    if DNI_responsable is None or DNI_responsable == 'nan':
         #Si la columna no está o es nan
         return None
     
