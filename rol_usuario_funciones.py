@@ -37,6 +37,55 @@ def crear_dataframe():
 
     return df
 
+def generar_opciones_dropdown(df):
+    #Crear dropdowns
+    opciones_tramos = [
+        "Mañana", "Tarde", "Noche"
+    ]
+
+    tramos = [ {"label": k, "value": k} for k in opciones_tramos]
+
+    opciones_meses = [
+        "Enero", "Febrero", "Marzo", "Abril",
+        "Mayo", "Junio", "Julio", "Agosto",
+        "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ]
+
+    meses = [ {"label": k, "value": k} for k in opciones_meses]
+
+    anios_data = df['Año'].apply(lambda x: x.strip())
+    anios_data_ordenados = anios_data[anios_data != "No informado"].drop_duplicates().sort_values()
+    opciones_dropdown_anios = anios_data_ordenados.values
+
+    anios = [ {"label": k, "value": k} for k in opciones_dropdown_anios]
+
+    distritos_data = df[df['Distrito'] != "No informado"]
+    distritos_data_grouped = distritos_data.groupby(['Distrito']).size().reset_index(name='Count')
+    distritos_data_grouped = distritos_data_grouped[distritos_data_grouped['Count'] > 50]
+    opciones_dropdown_distritos =distritos_data_grouped['Distrito']
+
+    distritos = [ {"label": k, "value": k} for k in opciones_dropdown_distritos]
+
+    tipos_data = df['Tipos'].apply(lambda x: x.strip())
+    tipos_data = tipos_data[tipos_data != "No informado"].drop_duplicates().sort_values()
+    opciones_dropdown_tipos = tipos_data.values
+
+    tipos = [ {"label": k, "value": k} for k in opciones_dropdown_tipos]
+
+    modus_data = df['Modus_operandi'].apply(lambda x: x.strip())
+    modus_data = modus_data[modus_data != "No informado"].drop_duplicates().sort_values()
+    opciones_dropdown_modus = modus_data.values
+
+    modus = [ {"label": k, "value": k} for k in opciones_dropdown_modus]
+
+    calificacion_data = df['Calificacion'].apply(lambda x: x.strip())
+    calificacion_data = calificacion_data[calificacion_data != "No informado"].drop_duplicates().sort_values()
+    opciones_dropdown_calificacion = calificacion_data.values
+
+    calificaciones = [ {"label": k, "value": k} for k in opciones_dropdown_calificacion]
+
+    return anios, meses, tramos, distritos, tipos, modus, calificaciones
+
 def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, dropdownModus, dropdownCalificacion, dropdownDistrito):
     try:
         todaInformacion = df
@@ -46,52 +95,45 @@ def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, 
             layer_group = dl.LayerGroup([], id="layer-group")
             return [tile_layer,layer_group], html.Div([]), html.Div([]), html.Div([]),html.Div([]), "No se disponen datos suficientes para mostrar", ""
         
-        if dropdownTramo is not None:
-            todaInformacion = todaInformacion[todaInformacion["Tramo_horario"] == dropdownTramo]
+        if dropdownTramo is not None and len(dropdownTramo) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Tramo_horario"].isin(dropdownTramo)].copy()
 
-        if dropdownAnio is not None:
-            todaInformacion = todaInformacion[todaInformacion["Año"] == int(dropdownAnio)]
-            tituloAño = dropdownAnio
-        else:
-            tituloAño = ""
+        anioSeleccionado = False
+        if dropdownAnio is not None and len(dropdownAnio) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Año"].isin(dropdownAnio)].copy()
+            anioSeleccionado = True
         
-        indexDropdownMes = None
-        if dropdownMes is not None:
-            indexDropdownMes = opciones_meses.index(dropdownMes)
-            todaInformacion = todaInformacion[todaInformacion['Mes'] == str(indexDropdownMes + 1)]
-            tituloMes = "en " + dropdownMes 
-        else:
-            tituloMes = ""
+        mesSeleccionado = False
+        if dropdownMes is not None and len(dropdownMes) > 0:
+            indices = [str(opciones_meses.index(mes) + 1) for mes in dropdownMes]
+            todaInformacion = todaInformacion[todaInformacion['Mes'].isin(indices)].copy()
+            mesSeleccionado = True
 
-        if dropdownTipo is not None:
-            todaInformacion = todaInformacion[todaInformacion["Tipos"] == dropdownTipo]
+        if dropdownTipo is not None and len(dropdownTipo) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Tipos"].isin(dropdownTipo)].copy()
 
-        if dropdownModus is not None:
-            todaInformacion = todaInformacion[todaInformacion["Modus_operandi"] == dropdownModus]
+        if dropdownModus is not None and len(dropdownModus) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Modus_operandi"].isin(dropdownModus)].copy()
 
-        if dropdownCalificacion is not None:
-            todaInformacion = todaInformacion[todaInformacion["Calificacion"] == dropdownCalificacion]
+        if dropdownCalificacion is not None and len(dropdownCalificacion) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Calificacion"].isin(dropdownCalificacion)].copy()
 
-        if dropdownDistrito is not None:
-            todaInformacion = todaInformacion[todaInformacion["Distrito"] == dropdownDistrito]
-
-        #Fig1
-        #src = "https://umalaga.maps.arcgis.com/apps/instant/basic/index.html?appid=dff95ce7c4d54b5a9bfd90bba82045d9&level=10&extent=36.73931208030581,-4.463859509979803,36.70333080013165,-4.354425385110552"
-        #fig1 = html.Iframe(src=src, width="100%", height="400px")
+        if dropdownDistrito is not None and len(dropdownDistrito) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Distrito"].isin(dropdownDistrito)].copy()
 
         if todaInformacion is not None and todaInformacion.size > 0:
             #Fig1
-            fig1 = create_graph_1(todaInformacion, indexDropdownMes, dropdownAnio)
+            fig1 = create_graph_1(todaInformacion, mesSeleccionado, anioSeleccionado)
 
             #Fig2
-            fig2 = create_graph_2(todaInformacion, indexDropdownMes, dropdownAnio)
+            fig2 = create_graph_2(todaInformacion, mesSeleccionado, anioSeleccionado)
 
             #Fig3
             data_calificacion = todaInformacion.groupby(['Calificacion']).size().reset_index(name='Count')
-            fig3 = px.bar(data_calificacion, x='Calificacion', y='Count', labels={'Calificacion': 'Calificacion', 'Count': 'Número de hechos'}, title="Hechos por calificación " + tituloMes + " " + tituloAño)
+            fig3 = px.bar(data_calificacion, x='Calificacion', y='Count', labels={'Calificacion': 'Calificacion', 'Count': 'Número de hechos'}, title="Hechos por calificación")
             
             #Fig 4
-            fig4 = create_graph_4(todaInformacion, indexDropdownMes, dropdownAnio)
+            fig4 = create_graph_4(todaInformacion, mesSeleccionado, anioSeleccionado)
 
             filtered_coordinates_df = todaInformacion[(todaInformacion['LAT'] != 'No informado') & (todaInformacion['LON'] != 'No informado')]
 
@@ -121,44 +163,43 @@ def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, 
         layer_group = dl.LayerGroup([], id="layer-group")
         return [tile_layer,layer_group], html.Div([]), html.Div([]), html.Div([]), html.Div([]), ["Ha habido un error generando las gráficas", html.Br(), "Inténtelo de nuevo"], ""
 
-def create_graph_1(df, dropdownMes, dropdownAnio):
-    if dropdownAnio is None and dropdownMes is None:
+def create_graph_1(df, mesSeleccionado, anioSeleccionado):
+    if not anioSeleccionado and not mesSeleccionado:
         df['Año'] = df['Año'].astype(int)
         all_years = pd.DataFrame({'Año': range(int(df['Año'].min()), int(df['Año'].max() + 1))})
         merged_data = all_years.merge(df.groupby(['Año']).size().reset_index(name='Count'), how='left').fillna(0)
         fig1 = px.line(merged_data , x='Año', y='Count', labels={'Año': 'Año', 'Count': 'Número de Hechos'}, title="Tendencia anual")
     
-    elif dropdownAnio is not None and dropdownMes is None:
+    elif anioSeleccionado and not mesSeleccionado:
         df['Mes'] = df['Mes'].astype(int)
         all_meses = pd.DataFrame({'Mes': range(1, 13)})
         meses_data = all_meses.merge(df.groupby(['Mes', 'Tramo_horario']).size().reset_index(name='Count'), how='left').fillna(0)
         meses_data = (meses_data[meses_data['Tramo_horario'] != 0]).sort_values(by='Mes')
-        fig1 = px.line(meses_data , x='Mes', y='Count', color = "Tramo_horario", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia mensual en {dropdownAnio} por tramo horario")
+        fig1 = px.line(meses_data , x='Mes', y='Count', color = "Tramo_horario", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia mensual por tramo horario")
     
-    elif dropdownAnio is not None and dropdownMes is not None:
+    elif anioSeleccionado and mesSeleccionado:
         df['Dia'] = df['Dia'].astype(int)
 
-        numero_dias_mes = get_number_of_days(dropdownMes + 1, es_bisiesto(int(dropdownAnio)))
-        all_Dias = pd.DataFrame({'Dia': range(1, numero_dias_mes+1)})
+        all_Dias = pd.DataFrame({'Dia': range(1, 32)})
 
         meses_data = all_Dias.merge(df.groupby(['Dia', 'Tramo_horario']).size().reset_index(name='Count'), how='left').fillna(0)
         meses_data = meses_data[meses_data['Tramo_horario'] != 0]
 
-        fig1 = px.line(meses_data , x='Dia', y='Count',  color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia diaria en {opciones_meses[dropdownMes]} de {dropdownAnio} por tramo horario")
+        fig1 = px.line(meses_data , x='Dia', y='Count',  color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia diaria por tramo horario")
     
-    elif dropdownAnio is None and dropdownMes is not None:
+    elif not anioSeleccionado and mesSeleccionado:
         df['Año'] = df['Año'].astype(int)
 
         all_years = pd.DataFrame({'Año': range(df['Año'].min(), df['Año'].max() + 1)})
         grouped = df.groupby(['Año', 'Tramo_horario']).size().reset_index(name='Count')
         grouped = all_years.merge(grouped, on=['Año'], how='left').fillna(0)
         grouped = (grouped[grouped['Tramo_horario'] != 0]).sort_values(by='Año')
-        fig1 = px.line(grouped , x='Año', y='Count', color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia anual de {opciones_meses[dropdownMes]} por tramo horario")
+        fig1 = px.line(grouped , x='Año', y='Count', color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia anual por tramo horario")
     
     return fig1 
 
-def create_graph_2(df, dropdownMes, dropdownAnio):
-    if dropdownAnio is None and dropdownMes is None:
+def create_graph_2(df, mesSeleccionado, anioSeleccionado):
+    if not anioSeleccionado and not mesSeleccionado:
         df['Año'] = df['Año'].astype(int)
         all_years = pd.DataFrame({'Año': range(int(df['Año'].min()), int(df['Año'].max() + 1))})
         merged_data = all_years.merge(df.groupby(['Año', "Distrito"]).size().reset_index(name='Count'), how='left').fillna(0)
@@ -166,27 +207,25 @@ def create_graph_2(df, dropdownMes, dropdownAnio):
         merged_data = (merged_data[merged_data['Count'] > 20]).sort_values(by='Año')
         fig2 = px.line(merged_data , x='Año', y='Count', color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title="Tendencia anual por distrito")
     
-    elif dropdownAnio is not None and dropdownMes is None:
+    elif anioSeleccionado and not mesSeleccionado:
         df['Mes'] = df['Mes'].astype(int)
         all_meses = pd.DataFrame({'Mes': range(1, 13)})
         meses_data = all_meses.merge(df.groupby(['Mes', 'Distrito']).size().reset_index(name='Count'), how='left').fillna(0)
         meses_data = (meses_data[meses_data['Distrito'] != 0])
         meses_data = (meses_data[meses_data['Count'] > 10]).sort_values(by='Mes')
-        fig2 = px.line(meses_data , x='Mes', y='Count', color = "Distrito", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia mensual en {dropdownAnio} por distrito")
+        fig2 = px.line(meses_data , x='Mes', y='Count', color = "Distrito", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia mensual por distrito")
     
-    elif dropdownAnio is not None and dropdownMes is not None:
+    elif anioSeleccionado and mesSeleccionado:
         df['Dia'] = df['Dia'].astype(int)
-
-        numero_dias_mes = get_number_of_days(dropdownMes + 1, es_bisiesto(int(dropdownAnio)))
-        all_Dias = pd.DataFrame({'Dia': range(1, numero_dias_mes+1)})
+        all_Dias = pd.DataFrame({'Dia': range(1, 32)})
 
         meses_data = all_Dias.merge(df.groupby(['Dia', 'Distrito']).size().reset_index(name='Count'), how='left').fillna(0)
         meses_data = (meses_data[meses_data['Distrito'] != 0])
         meses_data = (meses_data[meses_data['Count'] > 5]).sort_values(by='Dia')
 
-        fig2 = px.line(meses_data , x='Dia', y='Count',  color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia diaria en {opciones_meses[dropdownMes]} de {dropdownAnio} por distrito")
+        fig2 = px.line(meses_data , x='Dia', y='Count',  color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia diaria por distrito")
     
-    elif dropdownAnio is None and dropdownMes is not None:
+    elif not anioSeleccionado and mesSeleccionado:
         df['Año'] = df['Año'].astype(int)
 
         all_years = pd.DataFrame({'Año': range(df['Año'].min(), df['Año'].max() + 1)})
@@ -196,12 +235,12 @@ def create_graph_2(df, dropdownMes, dropdownAnio):
         grouped = (grouped[grouped['Distrito'] != 0])
         grouped = (grouped[grouped['Count'] > 20]).sort_values(by='Año')
        
-        fig2 = px.line(grouped , x='Año', y='Count', color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia anual de {opciones_meses[dropdownMes]} por distrito")
+        fig2 = px.line(grouped , x='Año', y='Count', color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia anual por distrito")
     
     return fig2
 
-def create_graph_4(df, dropdownMes, dropdownAnio):
-    if dropdownAnio is None and dropdownMes is None:
+def create_graph_4(df, mesSeleccionado, anioSeleccionado):
+    if not anioSeleccionado and not mesSeleccionado:
         df['Año'] = df['Año'].astype(int)
         all_years = pd.DataFrame({'Año': range(int(df['Año'].min()), int(df['Año'].max() + 1))})
         merged_data = all_years.merge(df.groupby(['Año', "Modus_operandi"]).size().reset_index(name='Count'), how='left').fillna(0)
@@ -209,27 +248,25 @@ def create_graph_4(df, dropdownMes, dropdownAnio):
         merged_data = (merged_data[merged_data['Count'] > 20]).sort_values(by='Año')
         fig4 = px.line(merged_data , x='Año', y='Count', color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title="Tendencia anual por modus operandi")
     
-    elif dropdownAnio is not None and dropdownMes is None:
+    elif anioSeleccionado and not mesSeleccionado:
         df['Mes'] = df['Mes'].astype(int)
         all_meses = pd.DataFrame({'Mes': range(1, 13)})
         meses_data = all_meses.merge(df.groupby(['Mes', 'Modus_operandi']).size().reset_index(name='Count'), how='left').fillna(0)
         meses_data = (meses_data[meses_data['Modus_operandi'] != 0])
         meses_data = (meses_data[meses_data['Count'] > 10]).sort_values(by='Mes')
-        fig4 = px.line(meses_data , x='Mes', y='Count', color = "Modus_operandi", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia mensual en {dropdownAnio} por modus operandi")
+        fig4 = px.line(meses_data , x='Mes', y='Count', color = "Modus_operandi", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia mensual por modus operandi")
     
-    elif dropdownAnio is not None and dropdownMes is not None:
+    elif anioSeleccionado and mesSeleccionado:
         df['Dia'] = df['Dia'].astype(int)
-
-        numero_dias_mes = get_number_of_days(dropdownMes + 1, es_bisiesto(int(dropdownAnio)))
-        all_Dias = pd.DataFrame({'Dia': range(1, numero_dias_mes+1)})
+        all_Dias = pd.DataFrame({'Dia': range(1, 32)})
 
         meses_data = all_Dias.merge(df.groupby(['Dia', 'Modus_operandi']).size().reset_index(name='Count'), how='left').fillna(0)
         meses_data = (meses_data[meses_data['Modus_operandi'] != 0])
         meses_data = (meses_data[meses_data['Count'] > 5]).sort_values(by='Dia')
 
-        fig4 = px.line(meses_data , x='Dia', y='Count',  color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia diaria en {opciones_meses[dropdownMes]} de {dropdownAnio} por modus operandi")
+        fig4 = px.line(meses_data , x='Dia', y='Count',  color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia diaria por modus operandi")
     
-    elif dropdownAnio is None and dropdownMes is not None:
+    elif not anioSeleccionado and mesSeleccionado:
         df['Año'] = df['Año'].astype(int)
 
         all_years = pd.DataFrame({'Año': range(df['Año'].min(), df['Año'].max() + 1)})
@@ -239,41 +276,38 @@ def create_graph_4(df, dropdownMes, dropdownAnio):
         grouped = (grouped[grouped['Modus_operandi'] != 0])
         grouped = (grouped[grouped['Count'] > 20]).sort_values(by='Año')
        
-        fig4 = px.line(grouped , x='Año', y='Count', color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia anual de {opciones_meses[dropdownMes]} por modus operandi")
+        fig4 = px.line(grouped , x='Año', y='Count', color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia anual por modus operandi")
     
     return fig4
 
 def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, dropdownModus, dropdownCalificacion, dropdownDistrito):
     try:
         # Generate the PDF report and save it to a file
-        if dropdownTramo is not None:
-            todaInformacion = todaInformacion[todaInformacion["Tramo_horario"] == dropdownTramo]
+        if dropdownTramo is not None and len(dropdownTramo) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Tramo_horario"].isin(dropdownTramo)].copy()
 
-        if dropdownAnio is not None:
-            todaInformacion = todaInformacion[todaInformacion["Año"] == int(dropdownAnio)]
-            tituloAño = dropdownAnio
-        else:
-            tituloAño = ""
+        anioSeleccionado = False
+        if dropdownAnio is not None and len(dropdownAnio) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Año"].isin(dropdownAnio)].copy()
+            anioSeleccionado = True
         
-        indexDropdownMes = None
-        if dropdownMes is not None:
-            indexDropdownMes = opciones_meses.index(dropdownMes)
-            todaInformacion = todaInformacion[todaInformacion['Mes'] == str(indexDropdownMes + 1)]
-            tituloMes = "en " + dropdownMes 
-        else:
-            tituloMes = ""
+        mesSeleccionado = False
+        if dropdownMes is not None and len(dropdownMes) > 0:
+            indices = [str(opciones_meses.index(mes) + 1) for mes in dropdownMes]
+            todaInformacion = todaInformacion[todaInformacion['Mes'].isin(indices)].copy()
+            mesSeleccionado = True
 
-        if dropdownTipo is not None:
-            todaInformacion = todaInformacion[todaInformacion["Tipos"] == dropdownTipo]
+        if dropdownTipo is not None and len(dropdownTipo) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Tipos"].isin(dropdownTipo)].copy()
 
-        if dropdownModus is not None:
-            todaInformacion = todaInformacion[todaInformacion["Modus_operandi"] == dropdownModus]
+        if dropdownModus is not None and len(dropdownModus) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Modus_operandi"].isin(dropdownModus)].copy()
 
-        if dropdownCalificacion is not None:
-            todaInformacion = todaInformacion[todaInformacion["Calificacion"] == dropdownCalificacion]
+        if dropdownCalificacion is not None and len(dropdownCalificacion) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Calificacion"].isin(dropdownCalificacion)].copy()
 
-        if dropdownDistrito is not None:
-            todaInformacion = todaInformacion[todaInformacion["Distrito"] == dropdownDistrito]
+        if dropdownDistrito is not None and len(dropdownDistrito) > 0:
+            todaInformacion = todaInformacion[todaInformacion["Distrito"].isin(dropdownDistrito)].copy()
 
         report_filename = f"Pdfs/Informe_plataforma_delitos_malaga_Felipe_Llinares_{n_clicks}.pdf"
         
@@ -294,45 +328,43 @@ def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, d
         pdf_canvas.drawString(50, 620, "Filtros aplicados:")
 
         pdf_canvas.setFont("Helvetica", 14)
-        pdf_canvas.drawString(50, 595, f"Año: {dropdownAnio if dropdownAnio is not None else todos }")
-        pdf_canvas.drawString(50, 575, f"Mes: {dropdownMes if dropdownMes is not None else todos }")
-        pdf_canvas.drawString(50, 555, f"Tramo horario: {dropdownTramo if dropdownTramo is not None else todos }")
+        pdf_canvas.drawString(50, 595, f"Años: {[anio for anio in dropdownAnio] if (dropdownAnio is not None and len(dropdownAnio) > 0) else todos }")
+        pdf_canvas.drawString(50, 575, f"Meses: {[mes for mes in dropdownMes] if (dropdownMes is not None and len(dropdownAnio) > 0) else todos }")
+        pdf_canvas.drawString(50, 555, f"Tramos horarios: {[tramo for tramo in dropdownTramo] if (dropdownTramo is not None and len(dropdownAnio) > 0) else todos }")
         
-        pdf_canvas.drawString(50, 535, f"Distrito: {dropdownDistrito if dropdownDistrito is not None else todos }")
+        pdf_canvas.drawString(50, 535, f"Distritos: {[distrito for distrito in dropdownDistrito] if (dropdownDistrito is not None and len(dropdownDistrito) > 0) else todos }")
         
-        tipologia = dropdownTipo if dropdownTipo is not None else todos 
-        tipologia = tipologia[:50]  + "..." if len(tipologia) > 49 else tipologia 
-        pdf_canvas.drawString(50, 515, f"Tipología: {tipologia}")
+        tipologia = [(tipologia[:25]  + "..." if len(tipologia) > 25 else tipologia) for tipologia in dropdownDistrito] if (dropdownTipo is not None and len(dropdownTipo) > 0) else todos 
+        pdf_canvas.drawString(50, 515, f"Tipologías: {tipologia}")
 
-        pdf_canvas.drawString(50, 495, f"Modus operandi: {dropdownModus if dropdownModus is not None else todos }")
-        pdf_canvas.drawString(50, 475, f"Calificación: {dropdownCalificacion if dropdownCalificacion is not None else todos }")
+        pdf_canvas.drawString(50, 495, f"Modus operandis: {[modus for modus in dropdownModus]  if (dropdownModus is not None and len(dropdownModus) > 0) else todos }")
+        pdf_canvas.drawString(50, 475, f"Calificaciones: {[calificacion for calificacion in dropdownCalificacion] if (dropdownCalificacion is not None and len(dropdownCalificacion) > 0)  else todos }")
         
         pdf_canvas.setFont("Helvetica-Bold", 14)
         pdf_canvas.drawString(50, 440, f"Número de delitos: {len(todaInformacion)}")
 
         #Fig1
-        fig1 = create_graph_1(todaInformacion, indexDropdownMes, dropdownAnio)
+        fig1 = create_graph_1(todaInformacion,mesSeleccionado, anioSeleccionado)
         image1 = create_png_from_figura(fig1,'1')
         pdf_canvas.drawImage(image1, 50, 60, 512, 366)
 
         pdf_canvas.setFont("Helvetica", 14)
         pdf_canvas.drawString(320, 20, "Realizado por: FELIPE LLINARES GÓMEZ")
         
-        
         #Cambiamos a la siguiente página
         pdf_canvas.showPage()
 
         #Fig2
-        fig2 = create_graph_2(todaInformacion, indexDropdownMes, dropdownAnio)
+        fig2 = create_graph_2(todaInformacion, mesSeleccionado, anioSeleccionado)
         image2 = create_png_from_figura(fig2,'2')
 
         #Fig3
         data_calificacion = todaInformacion.groupby(['Calificacion']).size().reset_index(name='Count')
-        fig3 = px.bar(data_calificacion, x='Calificacion', y='Count', labels={'Calificacion': 'Calificacion', 'Count': 'Número de hechos'}, title="Hechos por calificación " + tituloMes + " " + tituloAño)
+        fig3 = px.bar(data_calificacion, x='Calificacion', y='Count', labels={'Calificacion': 'Calificacion', 'Count': 'Número de hechos'}, title="Hechos por calificación ")
         image3 = create_png_from_figura(fig3,'3')
 
         #Fig 4
-        fig4 = create_graph_4(todaInformacion, indexDropdownMes, dropdownAnio)
+        fig4 = create_graph_4(todaInformacion, mesSeleccionado, anioSeleccionado)
         image4 = create_png_from_figura(fig4,'4')
 
         pdf_canvas.drawImage(image_uma_path, 50, 715, 204, 70)
@@ -360,13 +392,3 @@ def create_png_from_figura(fig, numero):
         img_file.write(img)
 
     return image__path
-    
-def get_number_of_days(month, bisiesto):
-    if month == 2 and bisiesto:
-        return 29
-    elif month == 2:
-        return 28
-    elif month in [4, 6, 9, 11]:
-        return 30
-    else:
-        return 31

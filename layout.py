@@ -3,40 +3,9 @@ import dash_leaflet as dl
 import base64
 from dash import dcc, dash_table
 
-opciones_tramos = [
-    "Mañana", "Tarde", "Noche"
-]
 
-opciones_meses = [
-    "Enero", "Febrero", "Marzo", "Abril",
-    "Mayo", "Junio", "Julio", "Agosto",
-    "Septiembre", "Octubre", "Noviembre", "Diciembre"
-]
 
-def generar_layout_usuario(df):
-    #Crear dropdowns
-
-    anios_data = df['Año'].apply(lambda x: x.strip())
-    anios_data_ordenados = anios_data[anios_data != "No informado"].drop_duplicates().sort_values()
-    opciones_dropdown_anios = anios_data_ordenados.values
-
-    distritos_data = df[df['Distrito'] != "No informado"]
-    distritos_data_grouped = distritos_data.groupby(['Distrito']).size().reset_index(name='Count')
-    distritos_data_grouped = distritos_data_grouped[distritos_data_grouped['Count'] > 50]
-    opciones_dropdown_distritos =distritos_data_grouped['Distrito']
-
-    tipos_data = df['Tipos'].apply(lambda x: x.strip())
-    tipos_data = tipos_data[tipos_data != "No informado"].drop_duplicates().sort_values()
-    opciones_dropdown_tipos = tipos_data.values
-
-    modus_data = df['Modus_operandi'].apply(lambda x: x.strip())
-    modus_data = modus_data[modus_data != "No informado"].drop_duplicates().sort_values()
-    opciones_dropdown_modus = modus_data.values
-
-    calificacion_data = df['Calificacion'].apply(lambda x: x.strip())
-    calificacion_data = calificacion_data[calificacion_data != "No informado"].drop_duplicates().sort_values()
-    opciones_dropdown_calificacion = calificacion_data.values
-
+def generar_layout_usuario():
     #Creamos mapa
     markers = []
     tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
@@ -52,10 +21,11 @@ def generar_layout_usuario(df):
                         html.Label("Año"),
                         dcc.Dropdown(
                             id="dropdownAnios",
-                            options=[ {"label": k, "value": k} for k in opciones_dropdown_anios],
+                            options=[],
                             #value= opciones_dropdown_anios[0],
                             placeholder = "Selecciona de la lista",
                             style= {"width": "400px", "margin-left": 0, "margin-bottom": "10px"},
+                            multi=True
                         ),
                     ],
                     style={"margin-bottom": "10px", "display": "table"},
@@ -66,10 +36,11 @@ def generar_layout_usuario(df):
                         html.Label("Mes"),
                         dcc.Dropdown(
                             id="dropdownMeses",
-                            options=[ {"label": k, "value": k} for k in opciones_meses ],
+                            options=[],
                             #value= opciones_dropdown_meses[0],
                             placeholder = "Selecciona de la lista",
                             style= {"width": "400px", "margin-left": 0, "margin-bottom": "10px"},
+                            multi=True
                         ),
                     ],
                     style={"margin-bottom": "10px", "margin-left": "50px", "display": "table"},
@@ -80,10 +51,11 @@ def generar_layout_usuario(df):
                         html.Label("Tramo horario"),
                         dcc.Dropdown(
                             id="dropdownTramos",
-                            options=[ {"label": k, "value": k} for k in opciones_tramos],
+                            options=[],
                             #value= opciones_dropdown_tramos[0],
                             placeholder = "Selecciona de la lista",
                             style= {"width": "400px", "margin-left": 0, "margin-bottom": "10px"},
+                            multi=True
                         ),
                     ],
                     style={"margin-bottom": "10px", "margin-left": "50px", "display": "table"},
@@ -100,10 +72,11 @@ def generar_layout_usuario(df):
                         html.Label("Distrito"),
                         dcc.Dropdown(
                             id="dropdownDistrito",
-                            options=[ {"label": k, "value": k} for k in opciones_dropdown_distritos],
+                            options=[],
                             #value= opciones_dropdown_anios[0],
                             placeholder = "Selecciona de la lista",
                             style= {"width": "300px", "margin-left": 0, "margin-bottom": "10px"},
+                            multi=True
                         ),
                     ],
                     style={"margin-bottom": "10px", "display": "table"},
@@ -114,10 +87,11 @@ def generar_layout_usuario(df):
                         html.Label("Tipología"),
                         dcc.Dropdown(
                             id="dropdownTipos",
-                            options=[ {"label": k, "value": k} for k in opciones_dropdown_tipos],
+                            options=[],
                             #value= opciones_dropdown_tipos[0],
                             placeholder = "Selecciona de la lista",
                             style= {"width": "300px", "margin-left": 0, "margin-bottom": "10px"},
+                            multi=True
                         ),
                     ],
                     style={"margin-bottom": "10px", "margin-left": "50px", "display": "table"},
@@ -128,10 +102,11 @@ def generar_layout_usuario(df):
                         html.Label("Modus operandi"),
                         dcc.Dropdown(
                             id="dropdownModus",
-                            options=[ {"label": k, "value": k} for k in opciones_dropdown_modus ],
+                            options=[],
                             #value= opciones_dropdown_meses[0],
                             placeholder = "Selecciona de la lista",
                             style= {"width": "300px", "margin-left": 0, "margin-bottom": "10px"},
+                            multi=True
                         ),
                     ],
                     style={"margin-bottom": "10px", "margin-left": "50px", "display": "table"},
@@ -142,10 +117,11 @@ def generar_layout_usuario(df):
                         html.Label("Calificación"),
                         dcc.Dropdown(
                             id="dropdownCalificacion",
-                            options=[ {"label": k, "value": k} for k in opciones_dropdown_calificacion],
+                            options=[],
                             #value= opciones_dropdown_anios[0],
                             placeholder = "Selecciona de la lista",
                             style= {"width": "300px", "margin-left": 0, "margin-bottom": "10px"},
+                            multi=True
                         ),
                     ],
                     style={"margin-bottom": "10px", "margin-left": "50px", "display": "table"},
@@ -328,7 +304,7 @@ def generar_layout_administrador_usuarios():
                     html.Div([
                         html.Div([
                             html.Div(
-                                html.P("Gestione los usuarios", style={"margin": "0 auto", "font-size": "20px"}),
+                                html.P("Gestione los usuarios:", style={"margin": "0 auto", "font-size": "20px"}),
                                 style={"display": "flex", "justify-content": "center",  "margin-bottom": "20px"},
                                 className="row"
                             ),
@@ -352,7 +328,7 @@ def generar_layout_administrador_usuarios():
                     html.Div(
                         children=[
                             html.Div(
-                                html.P("Cree un nuevo usuario", style={"margin": "0 auto", "font-size": "20px"}),
+                                html.P("Cree un nuevo usuario:", style={"margin": "0 auto", "font-size": "20px"}),
                                 style={"display": "flex", "justify-content": "center",  "margin-bottom": "20px"},
                                 className="row"
                             ),
