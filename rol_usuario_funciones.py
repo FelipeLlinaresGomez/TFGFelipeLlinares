@@ -94,7 +94,7 @@ def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, 
             tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
             layer_group = dl.LayerGroup([], id="layer-group")
             return [tile_layer,layer_group], html.Div([]), html.Div([]), html.Div([]),html.Div([]), "No se disponen datos suficientes para mostrar", ""
-        
+    
         if dropdownTramo is not None and len(dropdownTramo) > 0:
             todaInformacion = todaInformacion[todaInformacion["Tramo_horario"].isin(dropdownTramo)].copy()
 
@@ -329,7 +329,7 @@ def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, d
 
         pdf_canvas.setFont("Helvetica", 14)
         pdf_canvas.drawString(50, 595, f"Años: {[anio for anio in dropdownAnio] if (dropdownAnio is not None and len(dropdownAnio) > 0) else todos }")
-        pdf_canvas.drawString(50, 575, f"Meses: {[mes for mes in dropdownMes] if (dropdownMes is not None and len(dropdownAnio) > 0) else todos }")
+        pdf_canvas.drawString(50, 575, f"Meses: {[mes for mes in dropdownMes] if (dropdownMes is not None and len(dropdownMes) > 0) else todos }")
         pdf_canvas.drawString(50, 555, f"Tramos horarios: {[tramo for tramo in dropdownTramo] if (dropdownTramo is not None and len(dropdownAnio) > 0) else todos }")
         
         pdf_canvas.drawString(50, 535, f"Distritos: {[distrito for distrito in dropdownDistrito] if (dropdownDistrito is not None and len(dropdownDistrito) > 0) else todos }")

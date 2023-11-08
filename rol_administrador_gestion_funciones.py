@@ -21,11 +21,14 @@ def obtener_años_borrar():
     cursor = mydb.cursor()
 
     #Create select query and execute
-    select_query = "SELECT DISTINCT Año from fecha ORDER BY Año;"
+    select_query = "SELECT DISTINCT Año from fecha f JOIN hecho h ON f.idFecha = h.Fecha ORDER BY Año;"
     cursor.execute(select_query)
     result_rows = cursor.fetchall()
-    result_lists = [item[0] for item in result_rows]
 
+    if result_rows is not None:
+        result_lists = [item[0] for item in result_rows]
+    else:
+        result_lists = []
     mydb.commit()
     cursor.close()
 

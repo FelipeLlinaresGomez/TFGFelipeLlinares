@@ -1,8 +1,6 @@
-CREATE DATABASE  IF NOT EXISTS `TFG_FELIPE_LLINARES` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `TFG_FELIPE_LLINARES`;
 -- MySQL dump 10.13  Distrib 8.0.28, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: TFG_FELIPE_LLINARES
+-- Host: 127.0.0.1    Database: tfg_felipe_llinares
 -- ------------------------------------------------------
 -- Server version	8.0.28
 
@@ -33,7 +31,32 @@ CREATE TABLE `actuacion` (
   PRIMARY KEY (`idActuacion`),
   KEY `plantilla_actuacion_idx` (`Plantilla_actuacion`),
   CONSTRAINT `plantilla_actuacion` FOREIGN KEY (`Plantilla_actuacion`) REFERENCES `plantilla_actuacion` (`idPlantillaActuacion`)
-) ENGINE=InnoDB AUTO_INCREMENT=163184 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=165402 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `combinacion_filtros`
+--
+
+DROP TABLE IF EXISTS `combinacion_filtros`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `combinacion_filtros` (
+  `idcombinacion_filtros` int unsigned NOT NULL AUTO_INCREMENT,
+  `Usuario` varchar(100) DEFAULT NULL,
+  `Nombre` varchar(300) DEFAULT NULL,
+  `Fecha_creacion` datetime DEFAULT NULL,
+  `Años` varchar(300) DEFAULT NULL,
+  `Meses` varchar(300) DEFAULT NULL,
+  `Tramos_horarios` varchar(300) DEFAULT NULL,
+  `Distritos` varchar(1000) DEFAULT NULL,
+  `Tipologias` varchar(1000) DEFAULT NULL,
+  `Modus` varchar(1000) DEFAULT NULL,
+  `Calificaciones` varchar(1000) DEFAULT NULL,
+  PRIMARY KEY (`idcombinacion_filtros`),
+  KEY `usuario_usuario_idx` (`Usuario`),
+  CONSTRAINT `usuario_usuario` FOREIGN KEY (`Usuario`) REFERENCES `usuario` (`usuario`)
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -78,7 +101,7 @@ CREATE TABLE `fecha` (
   PRIMARY KEY (`idFecha`),
   KEY `Dia_semana_fecha_idx` (`Dia_semana`),
   CONSTRAINT `Dia_semana_fecha` FOREIGN KEY (`Dia_semana`) REFERENCES `dia_semana` (`dia_semana`)
-) ENGINE=InnoDB AUTO_INCREMENT=169436 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=169881 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -137,7 +160,7 @@ CREATE TABLE `lugar` (
   `LON` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`idLugar`),
   UNIQUE KEY `idLugar_UNIQUE` (`idLugar`)
-) ENGINE=InnoDB AUTO_INCREMENT=144462 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=145893 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -155,7 +178,7 @@ CREATE TABLE `plantilla_actuacion` (
   `Provincia` varchar(300) DEFAULT NULL,
   `Municipio` varchar(300) DEFAULT NULL,
   PRIMARY KEY (`idPlantillaActuacion`)
-) ENGINE=InnoDB AUTO_INCREMENT=143654 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=143737 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -257,4 +280,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-06 19:23:46
+-- Dump completed on 2023-11-08 20:28:28
