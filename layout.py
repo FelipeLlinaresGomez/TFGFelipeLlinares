@@ -28,6 +28,10 @@ def generar_layout_usuario():
         html.Div(
             children=[
                 html.Div(
+                        html.Button("Ir rol administrador", id='btn-usuario-cambiar-rol', style={"text-align": "center", "color":"#fbfbfb", "border": "none", "display":"none"}),
+                        style={"flex-grow": 1, "text-align": "right"},
+                    ),
+                html.Div(
                     html.Button("Visualización datos", id='btn-usuario-visualizacion', style={"text-align": "center", "color":"#fbfbfb", "border": "none"}),
                     style={"flex-grow": 1, "text-align": "right"},
                 ),
@@ -354,6 +358,10 @@ def generar_layout_administrador():
             ),
             html.Div(
                 children=[
+                    html.Div(
+                        html.Button("Ir rol usuario", id='btn-administrador-cambiar-rol', style={"text-align": "center", "color":"#fbfbfb", "border": "none"}),
+                        style={"flex-grow": 1, "text-align": "right"},
+                    ),
                     html.Div(
                         html.Button("Inserción datos", id='btn-administrador-insercion', style={"text-align": "center", "color":"#fbfbfb", "border": "none"}),
                         style={"flex-grow": 1, "text-align": "right"},

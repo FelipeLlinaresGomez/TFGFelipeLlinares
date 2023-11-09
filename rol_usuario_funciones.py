@@ -121,7 +121,7 @@ def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, 
         if dropdownDistrito is not None and len(dropdownDistrito) > 0:
             todaInformacion = todaInformacion[todaInformacion["Distrito"].isin(dropdownDistrito)].copy()
 
-        if todaInformacion is not None and todaInformacion.size > 0:
+        if todaInformacion is not None and len(todaInformacion) > 0:
             #Fig1
             fig1 = create_graph_1(todaInformacion, mesSeleccionado, anioSeleccionado)
 
@@ -309,77 +309,189 @@ def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, d
         if dropdownDistrito is not None and len(dropdownDistrito) > 0:
             todaInformacion = todaInformacion[todaInformacion["Distrito"].isin(dropdownDistrito)].copy()
 
-        report_filename = f"Pdfs/Informe_plataforma_delitos_malaga_Felipe_Llinares_{n_clicks}.pdf"
+        if todaInformacion is not None and len(todaInformacion) > 0:
+            #Fig1
+            fig1 = create_graph_1(todaInformacion,mesSeleccionado, anioSeleccionado)
+            image1 = create_png_from_figura(fig1,'1')
+            
+            #Fig2
+            fig2 = create_graph_2(todaInformacion, mesSeleccionado, anioSeleccionado)
+            image2 = create_png_from_figura(fig2,'2')
+
+            #Fig3
+            data_calificacion = todaInformacion.groupby(['Calificacion']).size().reset_index(name='Count')
+            fig3 = px.bar(data_calificacion, x='Calificacion', y='Count', labels={'Calificacion': 'Calificacion', 'Count': 'Número de hechos'}, title="Hechos por calificación ")
+            image3 = create_png_from_figura(fig3,'3')
+
+            #Fig 4
+            fig4 = create_graph_4(todaInformacion, mesSeleccionado, anioSeleccionado)
+            image4 = create_png_from_figura(fig4,'4')
+
+            report_filename = f"Pdfs/Informe_plataforma_delitos_malaga_Felipe_Llinares_{n_clicks}.pdf"
+            pdf_canvas = canvas.Canvas(report_filename, pagesize=letter)
+
+            center_x = pdf_canvas._pagesize[0] / 2
+            todos = "Todos"
+            image_uma_path = "Imagenes/UniversidadMalaga.jpg"
+            image_etsi_path = "Imagenes/ETSIInformatica.jpg"
+            
+            #Header - Footer
+            pdf_canvas.drawImage(image_uma_path, 50, 715, 204, 70)
+            pdf_canvas.drawImage(image_etsi_path, pdf_canvas._pagesize[0]- 50 -204, 720, 204, 60)
+            pdf_canvas.setFont("Helvetica", 14)
+            pdf_canvas.drawString(320, 15, "Realizado por: FELIPE LLINARES GÓMEZ")
+
+            #Titulo
+            pdf_canvas.setFont("Helvetica-Bold", 20)
+            pdf_canvas.drawCentredString(center_x, 670, "VISUALIZACIÓN DE DELITOS EN MÁLAGA")
+
+            pdf_canvas.setFont("Helvetica-BoldOblique", 16)
+            pdf_canvas.drawString(50, 630, "Filtros aplicados:")
+            
+            #Filtros
+            pdf_canvas.setFont("Helvetica", 14)
+            altura = 605
+            
+            años = ", ".join([str(anio) for anio in dropdownAnio]) if (dropdownAnio is not None and len(dropdownAnio) > 0) else todos
+            start = 0
+            while start < len(años):
+                if start == 0:
+                    pdf_canvas.drawString(50, altura, f"Años: {años[start:start+70]}")
+                else:
+                    pdf_canvas.drawString(50, altura, años[start:start+70])
+                    if (start+70 >= len(años)):
+                        altura = altura - 5
+                start += 70
+                altura = altura - 20
+                
+
+            meses = ", ".join([mes for mes in dropdownMes]) if (dropdownMes is not None and len(dropdownMes) > 0) else todos
+            start = 0
+            while start < len(meses):
+                if start == 0:
+                    pdf_canvas.drawString(50, altura, f"Meses: {meses[start:start+70]}")
+                else:
+                    pdf_canvas.drawString(50, altura, meses[start:start+70])
+                    if (start+70 >= len(meses)):
+                        altura = altura - 5
+                start += 70
+                altura = altura - 20
+            
+            tramos = ", ".join([tramo for tramo in dropdownTramo]) if (dropdownTramo is not None and len(dropdownTramo) > 0) else todos
+            start = 0
+            while start < len(tramos):
+                if start == 0:
+                    pdf_canvas.drawString(50, altura, f"Tramos horarios: {tramos[start:start+70]}")
+                else:
+                    pdf_canvas.drawString(50, altura, tramos[start:start+70])
+                    if (start+70 >= len(tramos)):
+                        altura = altura - 5
+                start += 70
+                altura = altura - 20
+            
+            distritos = ", ".join([distrito for distrito in dropdownDistrito]) if (dropdownDistrito is not None and len(dropdownDistrito) > 0) else todos
+            start = 0
+            while start < len(distritos):
+                if start == 0:
+                    pdf_canvas.drawString(50, altura, f"Distritos: {distritos[start:start+50]}")
+                else:
+                    pdf_canvas.drawString(50, altura, distritos[start:start+50])
+                    if (start+50 >= len(distritos)):
+                        altura = altura - 5
+                start += 50
+                altura = altura - 20
+
+            tipos = ", ".join([tipologia for tipologia in dropdownTipo]) if (dropdownTipo is not None and len(dropdownTipo) > 0) else todos
+            start = 0
+            while start < len(tipos):
+                if start == 0:
+                    pdf_canvas.drawString(50, altura, f"Tipologías: {tipos[start:start+50]}")
+                else:
+                    pdf_canvas.drawString(50, altura, tipos[start:start+50])
+                    if (start+50 >= len(tipos)):
+                        altura = altura - 5
+                start += 50
+                altura = altura - 20
+
+            modus = ", ".join([modus for modus in dropdownModus]) if (dropdownModus is not None and len(dropdownModus) > 0) else todos
+            start = 0
+            while start < len(modus):
+                if start == 0:
+                    pdf_canvas.drawString(50, altura, f"Modus operandis: {modus[start:start+70]}")
+                else:
+                    pdf_canvas.drawString(50, altura, modus[start:start+70])
+                    if (start+70 >= len(modus)):
+                        altura = altura - 5
+                start += 70
+                altura = altura - 20
+
+            calificaciones = ", ".join([calificacion for calificacion in dropdownCalificacion]) if (dropdownCalificacion is not None and len(dropdownCalificacion) > 0) else todos
+            start = 0
+            while start < len(calificaciones):
+                if start == 0:
+                    pdf_canvas.drawString(50, altura, f"Calificaciones: {calificaciones[start:start+70]}")
+                else:
+                    pdf_canvas.drawString(50, altura, calificaciones[start:start+70])
+                    if (start+70 >= len(calificaciones)):
+                        altura = altura - 5
+                start += 70
+                altura = altura - 20
+
+            pdf_canvas.setFont("Helvetica-Bold", 14)
+            pdf_canvas.drawString(50, altura, f"Número de delitos: {len(todaInformacion)}")
+
+            #Graficas
+            #Si tenemos hueco para pintar la grafica 1 en la primera pantalla lo hacemos y metemos las otras 3 en la 2
+            print(altura)
+            if (altura > 406):
+                pdf_canvas.drawImage(image1, 50, 40, 512, 366)
+
+                #Cambiamos a la siguiente página
+                pdf_canvas.showPage()
+
+                #Header - Footer
+                pdf_canvas.drawImage(image_uma_path, 50, 715, 204, 70)
+                pdf_canvas.drawImage(image_etsi_path, pdf_canvas._pagesize[0]- 50 -204, 720, 204, 60)
+                pdf_canvas.setFont("Helvetica", 14)
+                pdf_canvas.drawString(320, 15, "Realizado por: FELIPE LLINARES GÓMEZ")
+
+                pdf_canvas.drawImage(image2, 106, 480, 400, 220)
+                pdf_canvas.drawImage(image3, 106, 260 , 400, 220)
+                pdf_canvas.drawImage(image4, 106, 40 , 400, 220)
+
+            else:
+                #Si no tenemos hueco para la grafica en la primera pantalla, hacemos 1 y 2 en la pagina 2 y 3 y 4 en la pagina 3
+                #Cambiamos a la siguiente página
+                pdf_canvas.showPage()
+
+                #Header - Footer
+                pdf_canvas.drawImage(image_uma_path, 50, 715, 204, 70)
+                pdf_canvas.drawImage(image_etsi_path, pdf_canvas._pagesize[0]- 50 -204, 720, 204, 60)
+                pdf_canvas.setFont("Helvetica", 14)
+                pdf_canvas.drawString(320, 15, "Realizado por: FELIPE LLINARES GÓMEZ")
+
+                pdf_canvas.drawImage(image1, 90, 340, 420, 300)
+                pdf_canvas.drawImage(image2, 90, 40, 420, 300)
+                
+                #Cambiamos a la siguiente página
+                pdf_canvas.showPage()
+
+                #Header - Footer
+                pdf_canvas.drawImage(image_uma_path, 50, 715, 204, 70)
+                pdf_canvas.drawImage(image_etsi_path, pdf_canvas._pagesize[0]- 50 -204, 720, 204, 60)
+                pdf_canvas.setFont("Helvetica", 14)
+                pdf_canvas.drawString(320, 15, "Realizado por: FELIPE LLINARES GÓMEZ")
+
+                pdf_canvas.drawImage(image3, 90, 340 , 420, 300)
+                pdf_canvas.drawImage(image4, 90, 40 , 420, 300)
+            
+            pdf_canvas.save()
+            
+            return f"Informe {n_clicks} guardado con éxito en la carpeta del proyecto"
         
-        pdf_canvas = canvas.Canvas(report_filename, pagesize=letter)
-
-        center_x = pdf_canvas._pagesize[0] / 2
-        todos = "Todos"
-        image_uma_path = "Imagenes/UniversidadMalaga.jpg"
-        image_etsi_path = "Imagenes/ETSIInformatica.jpg"
-
-        pdf_canvas.drawImage(image_uma_path, 50, 715, 204, 70)
-        pdf_canvas.drawImage(image_etsi_path, pdf_canvas._pagesize[0]- 50 -204, 720, 204, 60)
-
-        pdf_canvas.setFont("Helvetica-Bold", 20)
-        pdf_canvas.drawCentredString(center_x, 670, "VISUALIZACIÓN DE DELITOS EN MÁLAGA")
-
-        pdf_canvas.setFont("Helvetica-BoldOblique", 16)
-        pdf_canvas.drawString(50, 620, "Filtros aplicados:")
-
-        pdf_canvas.setFont("Helvetica", 14)
-        pdf_canvas.drawString(50, 595, f"Años: {[anio for anio in dropdownAnio] if (dropdownAnio is not None and len(dropdownAnio) > 0) else todos }")
-        pdf_canvas.drawString(50, 575, f"Meses: {[mes for mes in dropdownMes] if (dropdownMes is not None and len(dropdownMes) > 0) else todos }")
-        pdf_canvas.drawString(50, 555, f"Tramos horarios: {[tramo for tramo in dropdownTramo] if (dropdownTramo is not None and len(dropdownAnio) > 0) else todos }")
-        
-        pdf_canvas.drawString(50, 535, f"Distritos: {[distrito for distrito in dropdownDistrito] if (dropdownDistrito is not None and len(dropdownDistrito) > 0) else todos }")
-        
-        tipologia = [(tipologia[:25]  + "..." if len(tipologia) > 25 else tipologia) for tipologia in dropdownDistrito] if (dropdownTipo is not None and len(dropdownTipo) > 0) else todos 
-        pdf_canvas.drawString(50, 515, f"Tipologías: {tipologia}")
-
-        pdf_canvas.drawString(50, 495, f"Modus operandis: {[modus for modus in dropdownModus]  if (dropdownModus is not None and len(dropdownModus) > 0) else todos }")
-        pdf_canvas.drawString(50, 475, f"Calificaciones: {[calificacion for calificacion in dropdownCalificacion] if (dropdownCalificacion is not None and len(dropdownCalificacion) > 0)  else todos }")
-        
-        pdf_canvas.setFont("Helvetica-Bold", 14)
-        pdf_canvas.drawString(50, 440, f"Número de delitos: {len(todaInformacion)}")
-
-        #Fig1
-        fig1 = create_graph_1(todaInformacion,mesSeleccionado, anioSeleccionado)
-        image1 = create_png_from_figura(fig1,'1')
-        pdf_canvas.drawImage(image1, 50, 60, 512, 366)
-
-        pdf_canvas.setFont("Helvetica", 14)
-        pdf_canvas.drawString(320, 20, "Realizado por: FELIPE LLINARES GÓMEZ")
-        
-        #Cambiamos a la siguiente página
-        pdf_canvas.showPage()
-
-        #Fig2
-        fig2 = create_graph_2(todaInformacion, mesSeleccionado, anioSeleccionado)
-        image2 = create_png_from_figura(fig2,'2')
-
-        #Fig3
-        data_calificacion = todaInformacion.groupby(['Calificacion']).size().reset_index(name='Count')
-        fig3 = px.bar(data_calificacion, x='Calificacion', y='Count', labels={'Calificacion': 'Calificacion', 'Count': 'Número de hechos'}, title="Hechos por calificación ")
-        image3 = create_png_from_figura(fig3,'3')
-
-        #Fig 4
-        fig4 = create_graph_4(todaInformacion, mesSeleccionado, anioSeleccionado)
-        image4 = create_png_from_figura(fig4,'4')
-
-        pdf_canvas.drawImage(image_uma_path, 50, 715, 204, 70)
-        pdf_canvas.drawImage(image_etsi_path, pdf_canvas._pagesize[0]- 50 -204, 720, 204, 60)
-
-        pdf_canvas.drawImage(image2, 106, 480, 400, 220)
-        pdf_canvas.drawImage(image3, 106, 260 , 400, 220)
-        pdf_canvas.drawImage(image4, 106, 40 , 400, 220)
-
-        pdf_canvas.setFont("Helvetica", 14)
-        pdf_canvas.drawString(320, 20, "Realizado por: FELIPE LLINARES GÓMEZ")
-
-        pdf_canvas.save()
-        
-        return f"Informe {n_clicks} guardado con éxito en la carpeta del proyecto"
+        else:
+            return "Debe de disponer de datos para poder generar el informe"
+         
     except Exception as e:
         print(e)
         traceback.print_exc()
