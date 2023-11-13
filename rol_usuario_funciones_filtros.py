@@ -10,7 +10,7 @@ def obtener_filtros_usuario(username):
     cursor.execute(select_query, username)
     result_rows = cursor.fetchall()
 
-    if result_rows is not None:
+    if result_rows is not None and len(result_rows) > 0:
         dataframe_filtros = pd.DataFrame(result_rows, columns=["Nombre", "Fecha creación", "Años", "Meses", "Tramos horarios", "Distritos", "Tipologias", "Modus", "Calificaciones" ])
         dataframe_filtros["Fecha creación"] = dataframe_filtros["Fecha creación"].dt.strftime("%H:%M %d-%m-%y")
     else:

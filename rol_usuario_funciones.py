@@ -86,9 +86,9 @@ def generar_opciones_dropdown(df):
 
     return anios, meses, tramos, distritos, tipos, modus, calificaciones
 
-def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, dropdownModus, dropdownCalificacion, dropdownDistrito):
+def generar_figuras(dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, dropdownModus, dropdownCalificacion, dropdownDistrito):
     try:
-        todaInformacion = df
+        todaInformacion = crear_dataframe()
 
         if todaInformacion is None or todaInformacion.size <= 0:
             tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
@@ -137,7 +137,7 @@ def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, 
 
             filtered_coordinates_df = todaInformacion[(todaInformacion['LAT'] != 'No informado') & (todaInformacion['LON'] != 'No informado')]
 
-            if dropdownMes is not None and dropdownAnio is not None:
+            if dropdownMes is not None and len(dropdownMes) == 1 and dropdownAnio is not None and len(dropdownAnio) == 1:
                 markers = [dl.Marker(
                                 position=[row["LAT"], row["LON"]], 
                                 children=[dl.Tooltip(content = f"Fecha: {row['Dia']}/{row['Mes']}/{row['Año']} <br> Tipología: {row['Tipos']} <br> Calificacion: {row['Calificacion']} <br> Modus operandi: {row['Modus_operandi']}")]) 
@@ -150,7 +150,7 @@ def generar_figuras(df, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, 
             else:
                 tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
                 layer_group = dl.LayerGroup([], id="layer-group")
-                return [tile_layer,layer_group], dcc.Graph(figure=fig1), dcc.Graph(figure=fig2), dcc.Graph(figure=fig3), dcc.Graph(figure=fig4), "", "Filtre por año y mes para visualizar la geolocalización"
+                return [tile_layer,layer_group], dcc.Graph(figure=fig1), dcc.Graph(figure=fig2), dcc.Graph(figure=fig3), dcc.Graph(figure=fig4), "", "Filtre por un año y un mes concreto para visualizar la geolocalización"
         else:
             tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
             layer_group = dl.LayerGroup([], id="layer-group")
@@ -280,7 +280,7 @@ def create_graph_4(df, mesSeleccionado, anioSeleccionado):
     
     return fig4
 
-def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, dropdownModus, dropdownCalificacion, dropdownDistrito):
+def generar_informe_pdf(username, todaInformacion, n_clicks, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, dropdownModus, dropdownCalificacion, dropdownDistrito):
     try:
         # Generate the PDF report and save it to a file
         if dropdownTramo is not None and len(dropdownTramo) > 0:
@@ -327,7 +327,7 @@ def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, d
             fig4 = create_graph_4(todaInformacion, mesSeleccionado, anioSeleccionado)
             image4 = create_png_from_figura(fig4,'4')
 
-            report_filename = f"Pdfs/Informe_plataforma_delitos_malaga_Felipe_Llinares_{n_clicks}.pdf"
+            report_filename = f"Pdfs/Informe_{username}_plataforma_delitos_malaga_Felipe_Llinares_{n_clicks}.pdf"
             pdf_canvas = canvas.Canvas(report_filename, pagesize=letter)
 
             center_x = pdf_canvas._pagesize[0] / 2
@@ -345,22 +345,29 @@ def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, d
             pdf_canvas.setFont("Helvetica-Bold", 20)
             pdf_canvas.drawCentredString(center_x, 670, "VISUALIZACIÓN DE DELITOS EN MÁLAGA")
 
-            pdf_canvas.setFont("Helvetica-BoldOblique", 16)
-            pdf_canvas.drawString(50, 630, "Filtros aplicados:")
+            pdf_canvas.setFont("Helvetica-Bold", 16)
+            pdf_canvas.drawString(50, 630, f"Número de delitos: {len(todaInformacion)}")
+
+            pdf_canvas.setFont("Helvetica-BoldOblique", 15)
+            pdf_canvas.drawString(50, 605, "Filtros aplicados:")
             
             #Filtros
-            pdf_canvas.setFont("Helvetica", 14)
-            altura = 605
+            pdf_canvas.setFont("Helvetica-Bold", 14)
+            altura = 585
             
             años = ", ".join([str(anio) for anio in dropdownAnio]) if (dropdownAnio is not None and len(dropdownAnio) > 0) else todos
             start = 0
             while start < len(años):
                 if start == 0:
-                    pdf_canvas.drawString(50, altura, f"Años: {años[start:start+70]}")
+                    pdf_canvas.setFont("Helvetica-Bold", 14)
+                    pdf_canvas.drawString(50, altura, "Años:")
+                    pdf_canvas.setFont("Helvetica", 14)
+                    pdf_canvas.drawString(95, altura, f"{años[start:start+70]}")
                 else:
                     pdf_canvas.drawString(50, altura, años[start:start+70])
-                    if (start+70 >= len(años)):
-                        altura = altura - 5
+                    
+                if (start+70 >= len(años)):
+                    altura = altura - 5
                 start += 70
                 altura = altura - 20
                 
@@ -369,11 +376,15 @@ def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, d
             start = 0
             while start < len(meses):
                 if start == 0:
-                    pdf_canvas.drawString(50, altura, f"Meses: {meses[start:start+70]}")
+                    pdf_canvas.setFont("Helvetica-Bold", 14)
+                    pdf_canvas.drawString(50, altura, "Meses:")
+                    pdf_canvas.setFont("Helvetica", 14)
+                    pdf_canvas.drawString(102, altura, f"{meses[start:start+70]}")
                 else:
                     pdf_canvas.drawString(50, altura, meses[start:start+70])
-                    if (start+70 >= len(meses)):
-                        altura = altura - 5
+
+                if (start+70 >= len(meses)):
+                    altura = altura - 5
                 start += 70
                 altura = altura - 20
             
@@ -381,11 +392,15 @@ def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, d
             start = 0
             while start < len(tramos):
                 if start == 0:
-                    pdf_canvas.drawString(50, altura, f"Tramos horarios: {tramos[start:start+70]}")
+                    pdf_canvas.setFont("Helvetica-Bold", 14)
+                    pdf_canvas.drawString(50, altura, "Tramos horarios:")
+                    pdf_canvas.setFont("Helvetica", 14)
+                    pdf_canvas.drawString(167, altura, f"{tramos[start:start+70]}")
                 else:
                     pdf_canvas.drawString(50, altura, tramos[start:start+70])
-                    if (start+70 >= len(tramos)):
-                        altura = altura - 5
+
+                if (start+70 >= len(tramos)):
+                    altura = altura - 5
                 start += 70
                 altura = altura - 20
             
@@ -393,35 +408,31 @@ def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, d
             start = 0
             while start < len(distritos):
                 if start == 0:
-                    pdf_canvas.drawString(50, altura, f"Distritos: {distritos[start:start+50]}")
+                    pdf_canvas.setFont("Helvetica-Bold", 14)
+                    pdf_canvas.drawString(50, altura, "Distritos:")
+                    pdf_canvas.setFont("Helvetica", 14)
+                    pdf_canvas.drawString(113, altura, f"{distritos[start:start+50]}")
                 else:
                     pdf_canvas.drawString(50, altura, distritos[start:start+50])
-                    if (start+50 >= len(distritos)):
-                        altura = altura - 5
+
+                if (start+50 >= len(distritos)):
+                    altura = altura - 5
                 start += 50
                 altura = altura - 20
-
-            tipos = ", ".join([tipologia for tipologia in dropdownTipo]) if (dropdownTipo is not None and len(dropdownTipo) > 0) else todos
-            start = 0
-            while start < len(tipos):
-                if start == 0:
-                    pdf_canvas.drawString(50, altura, f"Tipologías: {tipos[start:start+50]}")
-                else:
-                    pdf_canvas.drawString(50, altura, tipos[start:start+50])
-                    if (start+50 >= len(tipos)):
-                        altura = altura - 5
-                start += 50
-                altura = altura - 20
-
+            
             modus = ", ".join([modus for modus in dropdownModus]) if (dropdownModus is not None and len(dropdownModus) > 0) else todos
             start = 0
             while start < len(modus):
                 if start == 0:
-                    pdf_canvas.drawString(50, altura, f"Modus operandis: {modus[start:start+70]}")
+                    pdf_canvas.setFont("Helvetica-Bold", 14)
+                    pdf_canvas.drawString(50, altura, "Modus operandis:")
+                    pdf_canvas.setFont("Helvetica", 14)
+                    pdf_canvas.drawString(172, altura, f"{modus[start:start+70]}")
                 else:
                     pdf_canvas.drawString(50, altura, modus[start:start+70])
-                    if (start+70 >= len(modus)):
-                        altura = altura - 5
+
+                if (start+70 >= len(modus)):
+                    altura = altura - 5
                 start += 70
                 altura = altura - 20
 
@@ -429,20 +440,52 @@ def generar_informe_pdf(todaInformacion, n_clicks, dropdownTramo, dropdownMes, d
             start = 0
             while start < len(calificaciones):
                 if start == 0:
-                    pdf_canvas.drawString(50, altura, f"Calificaciones: {calificaciones[start:start+70]}")
+                    pdf_canvas.setFont("Helvetica-Bold", 14)
+                    pdf_canvas.drawString(50, altura, "Calificaciones:")
+                    pdf_canvas.setFont("Helvetica", 14)
+                    pdf_canvas.drawString(152, altura, f"{calificaciones[start:start+70]}")
                 else:
                     pdf_canvas.drawString(50, altura, calificaciones[start:start+70])
-                    if (start+70 >= len(calificaciones)):
-                        altura = altura - 5
+
+                if (start+70 >= len(calificaciones)):
+                    altura = altura - 5
                 start += 70
                 altura = altura - 20
 
             pdf_canvas.setFont("Helvetica-Bold", 14)
-            pdf_canvas.drawString(50, altura, f"Número de delitos: {len(todaInformacion)}")
+            pdf_canvas.drawString(50, altura, "Tipologías:")
+            pdf_canvas.setFont("Helvetica", 14)
+
+            if (dropdownTipo is None or len(dropdownTipo) <= 0):
+                pdf_canvas.drawString(129, altura, f"{todos}")
+                altura = altura - 20
+            else:
+                altura = altura - 20
+                for tipologia in dropdownTipo:
+                    if altura > 40:
+                        if len(tipologia) > 57:
+                            pdf_canvas.drawString(50, altura, "- " + tipologia[0:55] + '...')
+                        else:
+                            pdf_canvas.drawString(50, altura, "- " + tipologia)
+                    
+                    else:
+                        pdf_canvas.showPage()
+
+                        #Header - Footer
+                        pdf_canvas.drawImage(image_uma_path, 50, 715, 204, 70)
+                        pdf_canvas.drawImage(image_etsi_path, pdf_canvas._pagesize[0]- 50 -204, 720, 204, 60)
+                        pdf_canvas.setFont("Helvetica", 14)
+                        pdf_canvas.drawString(320, 15, "Realizado por: FELIPE LLINARES GÓMEZ")
+
+                        altura = 670
+                        pdf_canvas.drawString(50, altura, "- " + tipologia)
+
+                    altura = altura - 20
+
+
 
             #Graficas
             #Si tenemos hueco para pintar la grafica 1 en la primera pantalla lo hacemos y metemos las otras 3 en la 2
-            print(altura)
             if (altura > 406):
                 pdf_canvas.drawImage(image1, 50, 40, 512, 366)
 

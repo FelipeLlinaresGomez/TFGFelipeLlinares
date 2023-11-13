@@ -9,6 +9,7 @@ import asyncio
 import traceback
 import re
 import geocode_data as geocode
+import math
 
 def insert_data(contents):
     listdenuncias = np.zeros(len(contents))
@@ -77,10 +78,10 @@ def insert_data(contents):
     return listdenuncias
 
 def insert_lugar(row, cursor):
-    Tipo_via = row[LUGAR_HECHO_TIPO_VIA] if LUGAR_HECHO_TIPO_VIA in row.index else None
-    Via = row[LUGAR_HECHO_VIA] if LUGAR_HECHO_VIA in row.index else None
-    Municipio = row[LUGAR_HECHO_MUNICIPIO] if LUGAR_HECHO_MUNICIPIO in row.index else None
-    Provincia = row[LUGAR_HECHO_PROVINCIA] if LUGAR_HECHO_PROVINCIA in row.index else None
+    Tipo_via = row[LUGAR_HECHO_TIPO_VIA].strip() if LUGAR_HECHO_TIPO_VIA in row.index and row[LUGAR_HECHO_TIPO_VIA] is not None else None
+    Via = row[LUGAR_HECHO_VIA].strip() if LUGAR_HECHO_VIA in row.index and row[LUGAR_HECHO_VIA] is not None else None
+    Municipio = row[LUGAR_HECHO_MUNICIPIO].strip() if LUGAR_HECHO_MUNICIPIO in row.index and row[LUGAR_HECHO_MUNICIPIO] is not None else None
+    Provincia = row[LUGAR_HECHO_PROVINCIA].strip() if LUGAR_HECHO_PROVINCIA in row.index and row[LUGAR_HECHO_PROVINCIA] is not None else None
 
     #Si no existe uno de los campos, devuelvo None 
     if Tipo_via is None or Via is None or Municipio is None or Provincia is None:
@@ -96,13 +97,13 @@ def insert_lugar(row, cursor):
         return result
     else:
         if Municipio.replace(" ", "").lower() == "malaga":
-            Continente = row[LUGAR_HECHO_CONTINENTE] if LUGAR_HECHO_CONTINENTE in row.index else None
-            Pais = row[LUGAR_HECHO_PAIS] if LUGAR_HECHO_PAIS in row.index else None
-            Jefatura = row[LUGAR_HECHO_JEFATURA] if LUGAR_HECHO_JEFATURA in row.index else None
-            Distrito = row[LUGAR_HECHO_DISTRITO] if LUGAR_HECHO_DISTRITO in row.index else None
-            Lat = row['Lat']
-            Lon = row['Lon']
-            
+            Continente = row[LUGAR_HECHO_CONTINENTE].strip() if LUGAR_HECHO_CONTINENTE in row.index and row[LUGAR_HECHO_CONTINENTE] is not None else None
+            Pais = row[LUGAR_HECHO_PAIS].strip() if LUGAR_HECHO_PAIS in row.index and row[LUGAR_HECHO_PAIS] is not None else None
+            Jefatura = row[LUGAR_HECHO_JEFATURA].strip() if LUGAR_HECHO_JEFATURA in row.index and row[LUGAR_HECHO_JEFATURA] is not None else None
+            Distrito = row[LUGAR_HECHO_DISTRITO].strip().upper() if LUGAR_HECHO_DISTRITO in row.index and row[LUGAR_HECHO_DISTRITO] is not None else None
+            Lat = row['Lat'] if row['Lat'] is not None and not math.isnan(row['Lat']) else None
+            Lon = row['Lon'] if row['Lon'] is not None and not math.isnan(row['Lon']) else None
+                        
             insert_lugar = "INSERT INTO lugar(Continente, Pais, Jefatura, Provincia, Municipio, Distrito, Tipo_via, Via, LAT, LON) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
             values_lugar = (Continente, Pais, Jefatura, Provincia, Municipio, Distrito, Tipo_via, Via, Lat, Lon)
 
@@ -228,13 +229,13 @@ def insert_responsable(row, cursor):
         return None
     
     DNI_responsable_copia = str(DNI_responsable).strip().lower()
-    if DNI_responsable_copia != "" and DNI_responsable_copia != 'no informado' and DNI_responsable_copia != 'indocumentado desconocido' and DNI_responsable_copia != 'no asociado':
+    if DNI_responsable_copia == "" or DNI_responsable_copia == 'no informado' or DNI_responsable_copia == 'indocumentado desconocido' or DNI_responsable_copia == 'no asociado':
         #Si el dni es no informado, no asociado o indocumentado desconocido devuelvo None
         return None
     
     try:
         select_query = "SELECT Dni from responsable WHERE responsable.Dni = %s;"
-        values_query = (DNI_responsable)
+        values_query = (DNI_responsable_copia)
         cursor.execute(select_query, values_query)
         result = cursor.fetchone()
     except Exception as e:
@@ -250,14 +251,14 @@ def insert_responsable(row, cursor):
         edad = None
         try:
             if (RESPONSABLE_EDAD in row.index):
-                edad = int( row[RESPONSABLE_EDAD])
+                edad = int(row[RESPONSABLE_EDAD])
         except Exception:
             edad = None
 
         detenciones = None
         try:
             if (RESPONSABLE_DETENCIONES in row.index):
-                detenciones = int( row[RESPONSABLE_DETENCIONES])
+                detenciones = int(row[RESPONSABLE_DETENCIONES])
         except Exception:
             detenciones = None
 
@@ -270,12 +271,12 @@ def insert_responsable(row, cursor):
         Entrada_extranjero_responsable = row[RESPONSABLE_ENTRADA_EXTRANJERO] if RESPONSABLE_ENTRADA_EXTRANJERO in row.index else None
         Detenciones_responsable = detenciones
         insert_responsable = "INSERT INTO responsable(Dni, Pais, Edad, Sexo, Municipio, Nacionalidad, Extranjeria, Entrada_extranjero, Detenciones) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);"
-        values_responsable = (DNI_responsable, Pais_responsable, Edad_responsable, Sexo_responsable, Municipio_responsable, Nacionalidad_responsable, Extranjeria_responsable, Entrada_extranjero_responsable, Detenciones_responsable)
+        values_responsable = (DNI_responsable_copia, Pais_responsable, Edad_responsable, Sexo_responsable, Municipio_responsable, Nacionalidad_responsable, Extranjeria_responsable, Entrada_extranjero_responsable, Detenciones_responsable)
 
         try:
             #Si todo va bien devuelvo el dni insertado
             cursor.execute(insert_responsable, values_responsable)
-            return DNI_responsable
+            return DNI_responsable_copia
         except Exception as e:
             #Si algo va mal devuelvo None
             print(e)
@@ -339,15 +340,18 @@ def insert_hecho(row, cursor):
             result = cursor.fetchone()
 
             if result:
-                #Si ya existia el hecho con el mismo identificador, damos la columna por insertada
+                #Si ya existia el hecho con el mismo identificador, damos el hecho por insertado pero insertamos la relacion por si no estuviera
                 columna_insertada = True
+
+                #Insertamos la relacion aqui por si viene el mismo delito pero con diferente responsable
+                insert_responsable_hecho(idResponsable, Identificador_denuncia, cursor)
             else:
                 #Si no existia el hecho con el mismo identificador, insertamos
                 insert_hecho = "INSERT INTO hecho(Identificador_denuncia, Actuacion, Fecha, Lugar, Grupo_tipos, Tipos, Calificacion, Grado_ejecucion, Modus_operandi, Relacionado_tipos, Tramo_horario, Lugar_general, Lugar_grupo_especifico, Lugar_especificos) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
                 values_hecho = (Identificador_denuncia, idActuacion, idFecha, idLugar, Grupo_tipos, Tipos, Calificacion, Grado_ejecucion, Modus_operandi, Relacionado_tipos, Tramo_horario, General, Grupo_especifico, Especificos)
                 
                 try:
-                    #Si todo va bien damos la columna por insertada einsertamos la relacion con el responsable si tuviera
+                    #Si todo va bien damos la columna por insertada e insertamos la relacion con el responsable si tuviera
                     cursor.execute(insert_hecho, values_hecho)
                     if cursor.lastrowid > 0:
                         columna_insertada = True

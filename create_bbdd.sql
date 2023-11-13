@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS `TFG_FELIPE_LLINARES` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `TFG_FELIPE_LLINARES`;
 -- MySQL dump 10.13  Distrib 8.0.28, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: tfg_felipe_llinares
@@ -50,9 +52,9 @@ CREATE TABLE `combinacion_filtros` (
   `Meses` varchar(300) DEFAULT NULL,
   `Tramos_horarios` varchar(300) DEFAULT NULL,
   `Distritos` varchar(1000) DEFAULT NULL,
-  `Tipologias` varchar(1000) DEFAULT NULL,
-  `Modus` varchar(1000) DEFAULT NULL,
-  `Calificaciones` varchar(1000) DEFAULT NULL,
+   `Tipologias` varchar(10000) DEFAULT NULL,
+  `Modus` varchar(2000) DEFAULT NULL,
+  `Calificaciones` varchar(2000) DEFAULT NULL,
   PRIMARY KEY (`idcombinacion_filtros`),
   KEY `usuario_usuario_idx` (`Usuario`),
   CONSTRAINT `usuario_usuario` FOREIGN KEY (`Usuario`) REFERENCES `usuario` (`usuario`)
