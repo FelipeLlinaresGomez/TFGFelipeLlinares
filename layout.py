@@ -504,7 +504,7 @@ def generar_layout_administrador_usuarios():
                                 children=[
                                     html.Div(
                                         [
-                                            html.Label("Nuevo usuario", style={"text-align": "left", "font-family": "HelveticaNeue, sans-serif"}),
+                                            html.Label("Usuario", style={"text-align": "left", "font-family": "HelveticaNeue, sans-serif"}),
                                             dcc.Input(id="crear-usuario-username-input", type="text", placeholder="Ingrese nuevo usuario", style={"width": "300px", "font-family": "HelveticaNeue, sans-serif"}),
                                         ],
                                         style={"margin-bottom": "15px"},

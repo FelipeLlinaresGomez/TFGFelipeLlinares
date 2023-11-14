@@ -70,7 +70,7 @@ def generar_opciones_dropdown(df):
     tipos_data = tipos_data[tipos_data != "No informado"].drop_duplicates().sort_values()
     opciones_dropdown_tipos = tipos_data.values
 
-    tipos = [ {"label": k, "value": k} for k in opciones_dropdown_tipos]
+    tipos = [ {"label": k[0:30] + "..." if len(k) > 30 else k, "value": k, "title":k} for k in opciones_dropdown_tipos]
 
     modus_data = df['Modus_operandi'].apply(lambda x: x.strip())
     modus_data = modus_data[modus_data != "No informado"].drop_duplicates().sort_values()

@@ -13,9 +13,11 @@ import math
 
 def insert_data(contents):
     listdenuncias = np.zeros(len(contents))
+    listdenunciasYaInsertadas = np.zeros(len(contents))
     for i in range(len(contents)):
         cursor = mydb.cursor()
         denuncias_agregadas = 0
+        denuncias_ya_insertadas = 0
 
         try:
             decoded = base64.b64decode(contents[i].split(",")[1]).decode("utf-8")
@@ -62,20 +64,27 @@ def insert_data(contents):
                 traceback.print_exc()
             
             denuncia_correcta = False
+            denuncia_insertada = True
             for index, row in df.iterrows():
-                denuncia_correcta = insert_hecho(row, cursor)
+                denuncia_correcta, denuncia_ya_insertada = insert_hecho(row, cursor)
                 if denuncia_correcta:
                     denuncias_agregadas = denuncias_agregadas + 1
+
+                if denuncia_insertada == True and denuncia_ya_insertada == False:
+                    denuncia_insertada = False
+                    print("Denuncia no insertada previamente")
+                    print()
             
         except Exception:
             traceback.print_exc()
 
         listdenuncias[i] = (denuncias_agregadas)
+        listdenunciasYaInsertadas[i] = 1 if denuncia_insertada else 0
 
         mydb.commit()
         cursor.close()
 
-    return listdenuncias
+    return listdenuncias, listdenunciasYaInsertadas
 
 def insert_lugar(row, cursor):
     Tipo_via = row[LUGAR_HECHO_TIPO_VIA].strip() if LUGAR_HECHO_TIPO_VIA in row.index and row[LUGAR_HECHO_TIPO_VIA] is not None else None
@@ -301,14 +310,20 @@ def insert_responsable_hecho(dniResponsable, Identificador_denuncia, cursor):
             except Exception as e:
                 print(e)
                 traceback.print_exc()
+
+        #Devolvemos si el hecho-relacion estaba insertado aun con el hecho ya insertado
+        return result is not None
+    else:
+        return True
        
 def insert_hecho(row, cursor):
     columna_insertada = False
+    columna_previamente_insertada = False
 
     plantilla_cod = row[PLANTILLA_ACTUACION_PLANTILLA_COD] if PLANTILLA_ACTUACION_PLANTILLA_COD in row.index else (row[PLANTILLA_ACTUACION_UNIDAD_COD] if PLANTILLA_ACTUACION_UNIDAD_COD in row.index else None)
     num_actuacion = row[ACTUACION_NUMERO] if ACTUACION_NUMERO in row.index else None
     
-    if  num_actuacion != None and plantilla_cod != None:
+    if num_actuacion != None and plantilla_cod != None:
         idLugar = insert_lugar(row, cursor)
         
         #Si el lugar no está en Málaga no insertamos nada
@@ -342,9 +357,8 @@ def insert_hecho(row, cursor):
             if result:
                 #Si ya existia el hecho con el mismo identificador, damos el hecho por insertado pero insertamos la relacion por si no estuviera
                 columna_insertada = True
-
                 #Insertamos la relacion aqui por si viene el mismo delito pero con diferente responsable
-                insert_responsable_hecho(idResponsable, Identificador_denuncia, cursor)
+                columna_previamente_insertada = insert_responsable_hecho(idResponsable, Identificador_denuncia, cursor)
             else:
                 #Si no existia el hecho con el mismo identificador, insertamos
                 insert_hecho = "INSERT INTO hecho(Identificador_denuncia, Actuacion, Fecha, Lugar, Grupo_tipos, Tipos, Calificacion, Grado_ejecucion, Modus_operandi, Relacionado_tipos, Tramo_horario, Lugar_general, Lugar_grupo_especifico, Lugar_especificos) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
@@ -361,8 +375,16 @@ def insert_hecho(row, cursor):
                     print(e)
                     traceback.print_exc()
                     columna_insertada = False
-        
-    return columna_insertada
+
+        else:
+            #Si no vamos a insertar la columna porque el lugar no esta en malaga es como si ya estuviera insertada
+            columna_previamente_insertada = True
+    else:
+        #Si no vamos a insertar la columna porque no tiene plantilla es como si ya estuviera insertada
+        columna_previamente_insertada = True
+    if (not columna_previamente_insertada):
+        print(False)
+    return columna_insertada, columna_previamente_insertada
 
 def tramo_horario(hora):
     tramo_horario = 'No informado'
