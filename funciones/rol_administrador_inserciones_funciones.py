@@ -72,8 +72,6 @@ def insert_data(contents):
 
                 if denuncia_insertada == True and denuncia_ya_insertada == False:
                     denuncia_insertada = False
-                    print("Denuncia no insertada previamente")
-                    print()
             
         except Exception:
             traceback.print_exc()
@@ -382,8 +380,7 @@ def insert_hecho(row, cursor):
     else:
         #Si no vamos a insertar la columna porque no tiene plantilla es como si ya estuviera insertada
         columna_previamente_insertada = True
-    if (not columna_previamente_insertada):
-        print(False)
+
     return columna_insertada, columna_previamente_insertada
 
 def tramo_horario(hora):
