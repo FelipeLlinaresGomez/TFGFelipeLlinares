@@ -72,8 +72,6 @@ def insert_data(contents):
 
                 if denuncia_insertada == True and denuncia_ya_insertada == False:
                     denuncia_insertada = False
-                    print("Denuncia no insertada previamente")
-                    print()
             
         except Exception:
             traceback.print_exc()
@@ -198,16 +196,16 @@ def insert_plantilla_actuacion(row, cursor):
         
 def insert_actuacion(row, cursor):
     idPlantillaActuacion = insert_plantilla_actuacion(row, cursor)
-
-    #Si la plantilla no existe, devuelvo None  
-    if idPlantillaActuacion is None:
-        return None
-    
     Dia = row[ACTUACION_DIA] if ACTUACION_DIA in row.index else None
     Plantillas = row[ACTUACION_PLANTILLAS] if ACTUACION_PLANTILLAS in row.index else None
 
+    #Si la plantilla no existe, devuelvo None  
+    if idPlantillaActuacion is None or Dia is None or Plantillas is None:
+        return None
+    
     select_query = "SELECT idActuacion from actuacion WHERE actuacion.Plantilla_actuacion = %s and actuacion.Dia = %s and actuacion.Plantillas = %s;"
     values_query = (idPlantillaActuacion, Dia,Plantillas)
+
     cursor.execute(select_query, values_query)
     result = cursor.fetchone()
 
@@ -217,7 +215,7 @@ def insert_actuacion(row, cursor):
     else:
         Origen = row[ACTUACION_ORIGEN] if ACTUACION_ORIGEN in row.index else None
 
-        insert_actuacion = "INSERT INTO actuacion(Plantilla_actuacion, PLantillas, Dia, Origen) VALUES (%s, %s, %s, %s);"
+        insert_actuacion = "INSERT INTO actuacion(Plantilla_actuacion, Plantillas, Dia, Origen) VALUES (%s, %s, %s, %s);"
         values_actuacion = (idPlantillaActuacion, Plantillas, Dia, Origen)
 
         try:
@@ -382,8 +380,7 @@ def insert_hecho(row, cursor):
     else:
         #Si no vamos a insertar la columna porque no tiene plantilla es como si ya estuviera insertada
         columna_previamente_insertada = True
-    if (not columna_previamente_insertada):
-        print(False)
+        
     return columna_insertada, columna_previamente_insertada
 
 def tramo_horario(hora):

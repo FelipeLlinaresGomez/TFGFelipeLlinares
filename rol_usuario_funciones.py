@@ -21,6 +21,8 @@ opciones_meses = [
     "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ]
 
+df = pd.DataFrame()
+
 def crear_dataframe():
     cursor = mydb.cursor()
 
@@ -88,9 +90,13 @@ def generar_opciones_dropdown(df):
 
 def generar_figuras(dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, dropdownModus, dropdownCalificacion, dropdownDistrito):
     try:
-        todaInformacion = crear_dataframe()
+        global df
+        if len(df) <= 0:
+            df = crear_dataframe()
 
-        if todaInformacion is None or todaInformacion.size <= 0:
+        todaInformacion = df
+
+        if todaInformacion is None or len(todaInformacion) <= 0:
             tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
             layer_group = dl.LayerGroup([], id="layer-group")
             return [tile_layer,layer_group], html.Div([]), html.Div([]), html.Div([]),html.Div([]), "No se disponen datos suficientes para mostrar", ""
@@ -99,8 +105,10 @@ def generar_figuras(dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, drop
             todaInformacion = todaInformacion[todaInformacion["Tramo_horario"].isin(dropdownTramo)].copy()
 
         anioSeleccionado = False
+
         if dropdownAnio is not None and len(dropdownAnio) > 0:
-            todaInformacion = todaInformacion[todaInformacion["Año"].isin(dropdownAnio)].copy()
+            dropdownAnio_int = [int(year) for year in dropdownAnio]
+            todaInformacion = todaInformacion[todaInformacion["Año"].isin(dropdownAnio_int)].copy()
             anioSeleccionado = True
         
         mesSeleccionado = False
@@ -135,9 +143,14 @@ def generar_figuras(dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, drop
             #Fig 4
             fig4 = create_graph_4(todaInformacion, mesSeleccionado, anioSeleccionado)
 
-            filtered_coordinates_df = todaInformacion[(todaInformacion['LAT'] != 'No informado') & (todaInformacion['LON'] != 'No informado')]
-
             if dropdownMes is not None and len(dropdownMes) == 1 and dropdownAnio is not None and len(dropdownAnio) == 1:
+                filtered_coordinates_df = todaInformacion[
+                    (todaInformacion['LAT'] != 'No informado') &
+                    (todaInformacion['LON'] != 'No informado') &
+                    (todaInformacion['LAT'].notnull()) &
+                    (todaInformacion['LON'].notnull())
+                ]
+
                 markers = [dl.Marker(
                                 position=[row["LAT"], row["LON"]], 
                                 children=[dl.Tooltip(content = f"Fecha: {row['Dia']}/{row['Mes']}/{row['Año']} <br> Tipología: {row['Tipos']} <br> Calificacion: {row['Calificacion']} <br> Modus operandi: {row['Modus_operandi']}")]) 
