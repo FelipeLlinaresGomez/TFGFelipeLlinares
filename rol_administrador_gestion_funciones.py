@@ -6,12 +6,33 @@ from config.db import mydb
 def borrar_datos(anios):
     cursor = mydb.cursor()
 
+    select_hecho_query = f"""
+        SELECT Identificador_denuncia
+        FROM hecho
+        JOIN fecha ON hecho.Fecha = fecha.IdFecha
+        WHERE fecha.Año IN ({', '.join(['%s' for _ in anios])})
+    """
+    cursor.execute(select_hecho_query, anios)
+    hechos_ids = cursor.fetchall()
+    if hechos_ids is not None:
+        hechos_list = [item[0] for item in hechos_ids]
+    else:
+        hechos_list = []
+
+    delete_responsable_hecho = f"""
+        DELETE responsableshechos
+        FROM responsableshechos
+        WHERE responsableshechos.identificador_denuncia IN ({', '.join(['%s' for _ in hechos_list])})
+    """
+
     delete_query = f"""
         DELETE hecho
         FROM hecho
         JOIN fecha ON hecho.Fecha = fecha.IdFecha
         WHERE fecha.Año IN ({', '.join(['%s' for _ in anios])})
     """
+
+    cursor.execute(delete_responsable_hecho, hechos_list)
     cursor.execute(delete_query, anios)
 
     mydb.commit()
@@ -81,10 +102,18 @@ def crear_usuario(username, password, administrador):
 def borrar_usuarios(usernames):
     cursor = mydb.cursor()
 
+    delete_filtros = f"""
+    DELETE FROM combinacion_filtros
+    WHERE combinacion_filtros.Usuario IN ({', '.join(['%s' for _ in usernames])})
+    """
+
     delete_usuario = f"""
     DELETE FROM usuario
     WHERE usuario.usuario IN ({', '.join(['%s' for _ in usernames])})
     """
+
+    cursor.execute(delete_filtros, usernames)
     cursor.execute(delete_usuario, usernames)
 
     mydb.commit()
+    cursor.close()

@@ -31,13 +31,13 @@ def crear_dataframe():
     cursor.execute(select_query)
     result_rows = cursor.fetchall()
 
-    df = pd.DataFrame(result_rows, columns=[desc[0] for desc in cursor.description])
+    dataframe = pd.DataFrame(result_rows, columns=[desc[0] for desc in cursor.description])
 
     # Close the connection
     mydb.commit()
     cursor.close()
 
-    return df
+    return dataframe
 
 def generar_opciones_dropdown(df):
     #Crear dropdowns
@@ -88,10 +88,10 @@ def generar_opciones_dropdown(df):
 
     return anios, meses, tramos, distritos, tipos, modus, calificaciones
 
-def generar_figuras(dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, dropdownModus, dropdownCalificacion, dropdownDistrito):
+def generar_figuras(recarga, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, dropdownModus, dropdownCalificacion, dropdownDistrito):
     try:
         global df
-        if len(df) <= 0:
+        if len(df) <= 0 or recarga:
             df = crear_dataframe()
 
         todaInformacion = df

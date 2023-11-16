@@ -422,8 +422,8 @@ def generar_layout_administrador_insercion():
                     html.Button('INSERTAR ARCHIVOS SELECCIONADOS', id='submit-button', n_clicks=0, style={"margin": "0 auto",  "background-color": "#002b73", "color": "#fbfbfb"}),
                     style={"display": "flex", "justify-content": "center", "margin-bottom": "20px"}
                 ),
-                html.Div(id="output-data-upload", style={"margin": "0 auto", "text-align": "center"}),
-                generar_footer_bottom(),
+                html.Div(id="output-data-upload", style={"margin": "0 auto", "text-align": "center", "margin-bottom":"100px"}),
+                generar_footer(),
             ],
             id='layout-administrador-subida-archivos',
             style = {"display": "block"}

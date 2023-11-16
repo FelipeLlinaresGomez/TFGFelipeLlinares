@@ -17,7 +17,8 @@ def insert_data(contents):
     for i in range(len(contents)):
         cursor = mydb.cursor()
         denuncias_agregadas = 0
-        denuncias_ya_insertadas = 0
+        denuncia_correcta = False
+        denuncia_insertada = True
 
         try:
             decoded = base64.b64decode(contents[i].split(",")[1]).decode("utf-8")
@@ -63,8 +64,6 @@ def insert_data(contents):
                 df['Lon'] = None
                 traceback.print_exc()
             
-            denuncia_correcta = False
-            denuncia_insertada = True
             for index, row in df.iterrows():
                 denuncia_correcta, denuncia_ya_insertada = insert_hecho(row, cursor)
                 if denuncia_correcta:
