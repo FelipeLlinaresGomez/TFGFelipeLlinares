@@ -1,6 +1,6 @@
 ipykernel==6.15.0
 pandas==2.0.1
-dash_leaflet==1.0.8
+dash_leaflet==1.0.11
 pymysql==1.0.3
 plotly==5.14.1
 SQLAlchemy==2.0.13

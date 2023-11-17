@@ -10,6 +10,7 @@ import plotly.io as pio
 from dash import dcc
 from config.db import mydb
 import dash_leaflet as dl
+from itertools import product
 
 opciones_tramos = [
     "Mañana", "Tarde", "Noche"
@@ -181,115 +182,166 @@ def create_graph_1(df, mesSeleccionado, anioSeleccionado):
         df['Año'] = df['Año'].astype(int)
         all_years = pd.DataFrame({'Año': range(int(df['Año'].min()), int(df['Año'].max() + 1))})
         merged_data = all_years.merge(df.groupby(['Año']).size().reset_index(name='Count'), how='left').fillna(0)
-        fig1 = px.line(merged_data , x='Año', y='Count', labels={'Año': 'Año', 'Count': 'Número de Hechos'}, title="Tendencia anual")
+        fig1 = px.line(merged_data , x='Año', y='Count', labels={'Año': 'Año', 'Count': 'Número de Hechos'}, title="Tendencia anual", markers=True)
     
     elif anioSeleccionado and not mesSeleccionado:
         df['Mes'] = df['Mes'].astype(int)
-        all_meses = pd.DataFrame({'Mes': range(1, 13)})
-        meses_data = all_meses.merge(df.groupby(['Mes', 'Tramo_horario']).size().reset_index(name='Count'), how='left').fillna(0)
-        meses_data = (meses_data[meses_data['Tramo_horario'] != 0]).sort_values(by='Mes')
-        fig1 = px.line(meses_data , x='Mes', y='Count', color = "Tramo_horario", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia mensual por tramo horario")
+
+        # Generar todas las combinaciones mes y tramo_horario
+        months = list(range(1, 13))
+        tramo_horario = ['Mañana', 'Tarde', 'Noche']  
+        all_combinations = list(product(months, tramo_horario))
+        all_data_combinations = pd.DataFrame(all_combinations, columns=['Mes', 'Tramo_horario'])
+
+        #Agrupar datos en Mes y Tramo_horario y unimos
+        grouped_data = df.groupby(['Mes', 'Tramo_horario']).size().reset_index(name='Count')
+        merged_data = pd.merge(all_data_combinations, grouped_data, on=['Mes', 'Tramo_horario'], how='left').fillna(0)
+
+        fig1 = px.line(merged_data , x='Mes', y='Count', color = "Tramo_horario", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia mensual por tramo horario", markers=True)
     
     elif anioSeleccionado and mesSeleccionado:
         df['Dia'] = df['Dia'].astype(int)
 
-        all_Dias = pd.DataFrame({'Dia': range(1, 32)})
+        # Generar todas las combinaciones dias y tramo_horario
+        all_Dias = list(range(1, 32))
+        tramo_horario = ['Mañana', 'Tarde', 'Noche']  
+        all_combinations = list(product(all_Dias, tramo_horario))
+        all_data_combinations = pd.DataFrame(all_combinations, columns=['Dia', 'Tramo_horario'])
 
-        meses_data = all_Dias.merge(df.groupby(['Dia', 'Tramo_horario']).size().reset_index(name='Count'), how='left').fillna(0)
-        meses_data = meses_data[meses_data['Tramo_horario'] != 0]
+        grouped_data = df.groupby(['Dia', 'Tramo_horario']).size().reset_index(name='Count')
+        merged_data = pd.merge(all_data_combinations, grouped_data, on=['Dia', 'Tramo_horario'], how='left').fillna(0)
 
-        fig1 = px.line(meses_data , x='Dia', y='Count',  color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia diaria por tramo horario")
+        fig1 = px.line(merged_data , x='Dia', y='Count',  color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia diaria por tramo horario", markers=True)
     
     elif not anioSeleccionado and mesSeleccionado:
         df['Año'] = df['Año'].astype(int)
 
-        all_years = pd.DataFrame({'Año': range(df['Año'].min(), df['Año'].max() + 1)})
-        grouped = df.groupby(['Año', 'Tramo_horario']).size().reset_index(name='Count')
-        grouped = all_years.merge(grouped, on=['Año'], how='left').fillna(0)
-        grouped = (grouped[grouped['Tramo_horario'] != 0]).sort_values(by='Año')
-        fig1 = px.line(grouped , x='Año', y='Count', color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia anual por tramo horario")
+        # Generar todas las combinaciones dias y tramo_horario
+        all_Años = list( range(df['Año'].min(), df['Año'].max() + 1))
+        tramo_horario = ['Mañana', 'Tarde', 'Noche']  
+        all_combinations = list(product(all_Años, tramo_horario))
+        all_data_combinations = pd.DataFrame(all_combinations, columns=['Año', 'Tramo_horario'])
+
+        grouped_data = df.groupby(['Año', 'Tramo_horario']).size().reset_index(name='Count')
+        merged_data = pd.merge(all_data_combinations, grouped_data, on=['Año', 'Tramo_horario'], how='left').fillna(0)
+
+        fig1 = px.line(merged_data , x='Año', y='Count', color='Tramo_horario', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Tramo_horario': 'Tramo horario'}, title= f"Tendencia anual por tramo horario", markers=True)
     
     return fig1 
 
 def create_graph_2(df, mesSeleccionado, anioSeleccionado):
     if not anioSeleccionado and not mesSeleccionado:
         df['Año'] = df['Año'].astype(int)
-        all_years = pd.DataFrame({'Año': range(int(df['Año'].min()), int(df['Año'].max() + 1))})
-        merged_data = all_years.merge(df.groupby(['Año', "Distrito"]).size().reset_index(name='Count'), how='left').fillna(0)
-        merged_data = (merged_data[merged_data['Distrito'] != 0])
-        merged_data = (merged_data[merged_data['Count'] > 20]).sort_values(by='Año')
-        fig2 = px.line(merged_data , x='Año', y='Count', color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title="Tendencia anual por distrito")
+
+        # Generar todas las combinaciones dias y tramo_horario
+        all_Años = list( range(df['Año'].min(), df['Año'].max() + 1))
+        distritos = df['Distrito'].unique()
+        all_combinations = list(product(all_Años, distritos))
+        all_data_combinations = pd.DataFrame(all_combinations, columns=['Año', 'Distrito'])
+
+        grouped_data = df.groupby(['Año', 'Distrito']).size().reset_index(name='Count')
+        merged_data = pd.merge(all_data_combinations, grouped_data, on=['Año', 'Distrito'], how='left').fillna(0)
+
+        fig2 = px.line(merged_data , x='Año', y='Count', color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title="Tendencia anual por distrito", markers=True)
     
     elif anioSeleccionado and not mesSeleccionado:
         df['Mes'] = df['Mes'].astype(int)
-        all_meses = pd.DataFrame({'Mes': range(1, 13)})
-        meses_data = all_meses.merge(df.groupby(['Mes', 'Distrito']).size().reset_index(name='Count'), how='left').fillna(0)
-        meses_data = (meses_data[meses_data['Distrito'] != 0])
-        meses_data = (meses_data[meses_data['Count'] > 10]).sort_values(by='Mes')
-        fig2 = px.line(meses_data , x='Mes', y='Count', color = "Distrito", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia mensual por distrito")
+
+        months = list(range(1, 13))
+        distritos = df['Distrito'].unique()
+        all_combinations = list(product(months, distritos))
+        all_data_combinations = pd.DataFrame(all_combinations, columns=['Mes', 'Distrito'])
+
+        grouped_data = df.groupby(['Mes', 'Distrito']).size().reset_index(name='Count')
+        merged_data = pd.merge(all_data_combinations, grouped_data, on=['Mes', 'Distrito'], how='left').fillna(0)   
+
+        fig2 = px.line(merged_data , x='Mes', y='Count', color = "Distrito", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia mensual por distrito", markers=True)
     
     elif anioSeleccionado and mesSeleccionado:
         df['Dia'] = df['Dia'].astype(int)
-        all_Dias = pd.DataFrame({'Dia': range(1, 32)})
+        
+        # Generar todas las combinaciones dias y tramo_horario
+        all_Dias = list(range(1, 32))
+        distritos = df['Distrito'].unique()
+        all_combinations = list(product(all_Dias, distritos))
+        all_data_combinations = pd.DataFrame(all_combinations, columns=['Dia', 'Distrito'])
 
-        meses_data = all_Dias.merge(df.groupby(['Dia', 'Distrito']).size().reset_index(name='Count'), how='left').fillna(0)
-        meses_data = (meses_data[meses_data['Distrito'] != 0])
-        meses_data = (meses_data[meses_data['Count'] > 5]).sort_values(by='Dia')
+        grouped_data = df.groupby(['Dia', 'Distrito']).size().reset_index(name='Count')
+        merged_data = pd.merge(all_data_combinations, grouped_data, on=['Dia', 'Distrito'], how='left').fillna(0)   
 
-        fig2 = px.line(meses_data , x='Dia', y='Count',  color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia diaria por distrito")
+        fig2 = px.line(merged_data , x='Dia', y='Count',  color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia diaria por distrito", markers=True)
     
     elif not anioSeleccionado and mesSeleccionado:
         df['Año'] = df['Año'].astype(int)
 
-        all_years = pd.DataFrame({'Año': range(df['Año'].min(), df['Año'].max() + 1)})
-        grouped = df.groupby(['Año', 'Distrito']).size().reset_index(name='Count')
-        grouped = all_years.merge(grouped, on=['Año'], how='left').fillna(0)
+        # Generar todas las combinaciones dias y tramo_horario
+        all_Años = list( range(df['Año'].min(), df['Año'].max() + 1))
+        distritos = df['Distrito'].unique()
+        all_combinations = list(product(all_Años, distritos))
+        all_data_combinations = pd.DataFrame(all_combinations, columns=['Año', 'Distrito'])
        
-        grouped = (grouped[grouped['Distrito'] != 0])
-        grouped = (grouped[grouped['Count'] > 20]).sort_values(by='Año')
+        grouped_data = df.groupby(['Año', 'Distrito']).size().reset_index(name='Count')
+        merged_data = pd.merge(all_data_combinations, grouped_data, on=['Año', 'Distrito'], how='left').fillna(0)
        
-        fig2 = px.line(grouped , x='Año', y='Count', color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia anual por distrito")
+        fig2 = px.line(merged_data , x='Año', y='Count', color='Distrito', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Distrito': 'Distrito'}, title= f"Tendencia anual por distrito", markers=True)
     
     return fig2
 
 def create_graph_4(df, mesSeleccionado, anioSeleccionado):
     if not anioSeleccionado and not mesSeleccionado:
         df['Año'] = df['Año'].astype(int)
-        all_years = pd.DataFrame({'Año': range(int(df['Año'].min()), int(df['Año'].max() + 1))})
-        merged_data = all_years.merge(df.groupby(['Año', "Modus_operandi"]).size().reset_index(name='Count'), how='left').fillna(0)
-        merged_data = (merged_data[merged_data['Modus_operandi'] != 0])
-        merged_data = (merged_data[merged_data['Count'] > 20]).sort_values(by='Año')
-        fig4 = px.line(merged_data , x='Año', y='Count', color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title="Tendencia anual por modus operandi")
+
+        # Generar todas las combinaciones dias y tramo_horario
+        all_Años = list( range(df['Año'].min(), df['Año'].max() + 1))
+        modus = df['Modus_operandi'].unique()
+        all_combinations = list(product(all_Años, modus))
+        all_data_combinations = pd.DataFrame(all_combinations, columns=['Año', 'Modus_operandi'])
+
+        grouped_data = df.groupby(['Año', 'Modus_operandi']).size().reset_index(name='Count')
+        merged_data = pd.merge(all_data_combinations, grouped_data, on=['Año', 'Modus_operandi'], how='left').fillna(0)
+
+        fig4 = px.line(merged_data , x='Año', y='Count', color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title="Tendencia anual por modus operandi", markers=True)
     
     elif anioSeleccionado and not mesSeleccionado:
         df['Mes'] = df['Mes'].astype(int)
-        all_meses = pd.DataFrame({'Mes': range(1, 13)})
-        meses_data = all_meses.merge(df.groupby(['Mes', 'Modus_operandi']).size().reset_index(name='Count'), how='left').fillna(0)
-        meses_data = (meses_data[meses_data['Modus_operandi'] != 0])
-        meses_data = (meses_data[meses_data['Count'] > 10]).sort_values(by='Mes')
-        fig4 = px.line(meses_data , x='Mes', y='Count', color = "Modus_operandi", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia mensual por modus operandi")
+
+        months = list(range(1, 13))
+        modus = df['Modus_operandi'].unique()
+        all_combinations = list(product(months, modus))
+        all_data_combinations = pd.DataFrame(all_combinations, columns=['Mes', 'Modus_operandi'])
+
+        grouped_data = df.groupby(['Mes', 'Modus_operandi']).size().reset_index(name='Count')
+        merged_data = pd.merge(all_data_combinations, grouped_data, on=['Mes', 'Modus_operandi'], how='left').fillna(0)   
+
+        fig4 = px.line(merged_data , x='Mes', y='Count', color = "Modus_operandi", labels={'Mes': 'Mes', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia mensual por modus operandi", markers=True)
     
     elif anioSeleccionado and mesSeleccionado:
         df['Dia'] = df['Dia'].astype(int)
-        all_Dias = pd.DataFrame({'Dia': range(1, 32)})
+        
+        # Generar todas las combinaciones dias y tramo_horario
+        all_Dias = list(range(1, 32))
+        modus = df['Modus_operandi'].unique()
+        all_combinations = list(product(all_Dias, modus))
+        all_data_combinations = pd.DataFrame(all_combinations, columns=['Dia', 'Modus_operandi'])
 
-        meses_data = all_Dias.merge(df.groupby(['Dia', 'Modus_operandi']).size().reset_index(name='Count'), how='left').fillna(0)
-        meses_data = (meses_data[meses_data['Modus_operandi'] != 0])
-        meses_data = (meses_data[meses_data['Count'] > 5]).sort_values(by='Dia')
+        grouped_data = df.groupby(['Dia', 'Modus_operandi']).size().reset_index(name='Count')
+        merged_data = pd.merge(all_data_combinations, grouped_data, on=['Dia', 'Modus_operandi'], how='left').fillna(0)   
 
-        fig4 = px.line(meses_data , x='Dia', y='Count',  color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia diaria por modus operandi")
+        fig4 = px.line(merged_data , x='Dia', y='Count',  color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia diaria por modus operandi", markers=True)
     
     elif not anioSeleccionado and mesSeleccionado:
         df['Año'] = df['Año'].astype(int)
 
-        all_years = pd.DataFrame({'Año': range(df['Año'].min(), df['Año'].max() + 1)})
-        grouped = df.groupby(['Año', 'Modus_operandi']).size().reset_index(name='Count')
-        grouped = all_years.merge(grouped, on=['Año'], how='left').fillna(0)
+        # Generar todas las combinaciones dias y tramo_horario
+        all_Años = list( range(df['Año'].min(), df['Año'].max() + 1))
+        modus = df['Modus_operandi'].unique()
+        all_combinations = list(product(all_Años, modus))
+        all_data_combinations = pd.DataFrame(all_combinations, columns=['Año', 'Modus_operandi'])
        
-        grouped = (grouped[grouped['Modus_operandi'] != 0])
-        grouped = (grouped[grouped['Count'] > 20]).sort_values(by='Año')
+        grouped_data = df.groupby(['Año', 'Modus_operandi']).size().reset_index(name='Count')
+        merged_data = pd.merge(all_data_combinations, grouped_data, on=['Año', 'Modus_operandi'], how='left').fillna(0)
        
-        fig4 = px.line(grouped , x='Año', y='Count', color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia anual por modus operandi")
+        fig4 = px.line(merged_data , x='Año', y='Count', color='Modus_operandi', labels={'Año': 'Año', 'Count': 'Número de Hechos', 'Modus_operandi': 'Modus operandi'}, title= f"Tendencia anual por modus operandi", markers=True)
     
     return fig4
 
