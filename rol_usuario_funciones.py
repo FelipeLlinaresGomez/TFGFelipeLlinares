@@ -189,7 +189,7 @@ def create_graph_1(df, mesSeleccionado, anioSeleccionado):
 
         # Generar todas las combinaciones mes y tramo_horario
         months = list(range(1, 13))
-        tramo_horario = ['Mañana', 'Tarde', 'Noche']  
+        tramo_horario = df['Tramo_horario'].unique()
         all_combinations = list(product(months, tramo_horario))
         all_data_combinations = pd.DataFrame(all_combinations, columns=['Mes', 'Tramo_horario'])
 
@@ -204,7 +204,7 @@ def create_graph_1(df, mesSeleccionado, anioSeleccionado):
 
         # Generar todas las combinaciones dias y tramo_horario
         all_Dias = list(range(1, 32))
-        tramo_horario = ['Mañana', 'Tarde', 'Noche']  
+        tramo_horario = df['Tramo_horario'].unique() 
         all_combinations = list(product(all_Dias, tramo_horario))
         all_data_combinations = pd.DataFrame(all_combinations, columns=['Dia', 'Tramo_horario'])
 
@@ -218,7 +218,7 @@ def create_graph_1(df, mesSeleccionado, anioSeleccionado):
 
         # Generar todas las combinaciones dias y tramo_horario
         all_Años = list( range(df['Año'].min(), df['Año'].max() + 1))
-        tramo_horario = ['Mañana', 'Tarde', 'Noche']  
+        tramo_horario = df['Tramo_horario'].unique()
         all_combinations = list(product(all_Años, tramo_horario))
         all_data_combinations = pd.DataFrame(all_combinations, columns=['Año', 'Tramo_horario'])
 
