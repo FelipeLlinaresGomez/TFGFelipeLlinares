@@ -4,11 +4,11 @@ import numpy as np
 from io import StringIO
 from festividades_utils.festividades import get_festividad
 from config.db import mydb
-from cabeceras import *
+from funciones.cabeceras import *
 import asyncio
 import traceback
 import re
-import geocode_data as geocode
+import funciones.geocode_data as geocode
 import math
 
 def insert_data(contents):

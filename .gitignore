@@ -4,3 +4,4 @@ Pdfs/
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 .env
+assets/

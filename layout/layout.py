@@ -2,8 +2,9 @@ from dash import html
 import dash_leaflet as dl
 import base64
 from dash import dcc, dash_table
+from dash_extensions.javascript import arrow_function, assign
 
-def generar_layout_usuario():
+def generar_layout_usuario(geojson):
     with open('Imagenes/cruz.jpg', 'rb') as f:
         cruz = base64.b64encode(f.read()).decode()
 
@@ -52,7 +53,7 @@ def generar_layout_usuario():
             id='lupa-container',
             style={"margin-bottom": "10px", "display": "flex", "justify-content": "flex-end"}
         ),
-        generar_layout_usuario_visualizacion(),
+        generar_layout_usuario_visualizacion(geojson),
         generar_layout_usuario_filtros(),
         html.Div(
             id='centered-square-box',
@@ -112,11 +113,24 @@ def generar_layout_usuario():
     style={"background-color": "#fbfbfb", "font-family": "HelveticaNeue, sans-serif", "display": "none"}
 )
 
-def generar_layout_usuario_visualizacion():
+def generar_layout_usuario_visualizacion(geojson):
     #Creamos mapa
-    markers = []
-    tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
-    layer_group = dl.LayerGroup(markers, id="layer-group")
+    classes = [0, 2, 4, 7, 10, 20, 50, 100]
+    colorscale = ['blue', 'yellow', 'orange', 'red', '#FC4E2A', '#E31A1C', '#BD0026', '#800026']
+    style = dict(weight=2, opacity=1, color='blue', dashArray='', fillOpacity=1)
+
+    style_handle = assign("""function(feature, context){
+        const {classes, colorscale, style, colorProp} = context.hideout;  // get props from hideout
+        const value = feature.numero ?? 0;  // get value the determines the color
+        console.log(value);
+        for (let i = 0; i < classes.length; ++i) {
+            if (value >= classes[i]) {
+                style.color = colorscale[i];  // set the fill color according to the class
+            }
+            
+        }
+        return style;
+    }""")
 
     return html.Div(
             children=[
@@ -286,9 +300,28 @@ def generar_layout_usuario_visualizacion():
                 html.Div(
                     [
                         html.Div([
-                            dl.Map(children=[tile_layer, layer_group],
-                                style={'width': "1200px", 'height': "700PX", "font-size": "12px"}, center=[36.72016, -4.42034], zoom=13, id="map"),
-                            ], 
+                            dl.Map(
+                                id='map',
+                                center=[36.72043794184044, -4.446592099057205],
+                                zoom=10,
+                                children=[
+                                    dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer"),
+                                    dl.FullScreenControl(),
+                                    dl.Colorbar(colorscale=colorscale, width=20, height=200, min=0, max=50, position="topright"),
+                                    dl.ScaleControl(position="bottomleft"),
+                                    dl.GeoJSON(
+                                        data=geojson, 
+                                        id='shapefile',
+                                        zoomToBounds=True,  # when true, zooms to bounds when data changes (e.g. on load)
+                                        zoomToBoundsOnClick=True,  # when true, zooms to bounds of feature (e.g. calle) on click
+                                        options=dict(style=style_handle),
+                                        hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp="numero"),
+                                        hoverStyle=arrow_function(dict(weight=4, color='#000', dashArray='')), # style applied on hover
+                                    )
+                                ],
+                                className="row",
+                                style={'width': '1200px', 'height': '700px'}
+                            )],
                             className="row",
                             style={
                                 "text-align": "center",  # Center the text horizontally

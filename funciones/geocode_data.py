@@ -1,4 +1,4 @@
-from cabeceras import *
+from funciones.cabeceras import *
 import aiohttp
 import asyncio
 import os  # Import the os module

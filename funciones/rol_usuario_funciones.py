@@ -89,7 +89,7 @@ def generar_opciones_dropdown(df):
 
     return anios, meses, tramos, distritos, tipos, modus, calificaciones
 
-def generar_figuras(recarga, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, dropdownModus, dropdownCalificacion, dropdownDistrito):
+def generar_figuras(geojson, recarga, dropdownTramo, dropdownMes, dropdownAnio, dropdownTipo, dropdownModus, dropdownCalificacion, dropdownDistrito):
     try:
         global df
         if len(df) <= 0 or recarga:
@@ -98,9 +98,7 @@ def generar_figuras(recarga, dropdownTramo, dropdownMes, dropdownAnio, dropdownT
         todaInformacion = df
 
         if todaInformacion is None or len(todaInformacion) <= 0:
-            tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
-            layer_group = dl.LayerGroup([], id="layer-group")
-            return [tile_layer,layer_group], html.Div([]), html.Div([]), html.Div([]),html.Div([]), "No se disponen datos suficientes para mostrar", ""
+            return geojson, html.Div([]), html.Div([]), html.Div([]),html.Div([]), "No se disponen datos suficientes para mostrar", ""
     
         if dropdownTramo is not None and len(dropdownTramo) > 0:
             todaInformacion = todaInformacion[todaInformacion["Tramo_horario"].isin(dropdownTramo)].copy()
@@ -144,38 +142,34 @@ def generar_figuras(recarga, dropdownTramo, dropdownMes, dropdownAnio, dropdownT
             #Fig 4
             fig4 = create_graph_4(todaInformacion, mesSeleccionado, anioSeleccionado)
 
-            if dropdownMes is not None and len(dropdownMes) == 1 and dropdownAnio is not None and len(dropdownAnio) == 1:
-                filtered_coordinates_df = todaInformacion[
-                    (todaInformacion['LAT'] != 'No informado') &
-                    (todaInformacion['LON'] != 'No informado') &
-                    (todaInformacion['LAT'].notnull()) &
-                    (todaInformacion['LON'].notnull())
-                ]
+            # Create a dictionary mapping street names to their corresponding point counts
+            street_point_counts = {}
+            for index, row in df.iterrows():
+                street_name = row['Via']
+                street_point_counts.setdefault(street_name, 0)
+                street_point_counts[street_name] += 1
 
-                markers = [dl.Marker(
-                                position=[row["LAT"], row["LON"]], 
-                                children=[dl.Tooltip(content = f"Fecha: {row['Dia']}/{row['Mes']}/{row['Año']} <br> Tipología: {row['Tipos']} <br> Calificacion: {row['Calificacion']} <br> Modus operandi: {row['Modus_operandi']}")]) 
-                                for i, row in filtered_coordinates_df.iterrows()]
-                
-                tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
-                layer_group = dl.LayerGroup(markers, id="layer-group")
+            # Assign point counts to features using the dictionary
+            for feature in geojson['features']:
+                street_name = feature['properties']['nombre_via']
+                feature['numero'] = street_point_counts.get(street_name, 0)
+
             
-                return [tile_layer,layer_group], dcc.Graph(figure=fig1), dcc.Graph(figure=fig2), dcc.Graph(figure=fig3), dcc.Graph(figure=fig4),  "", ""
-            else:
-                tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
-                layer_group = dl.LayerGroup([], id="layer-group")
-                return [tile_layer,layer_group], dcc.Graph(figure=fig1), dcc.Graph(figure=fig2), dcc.Graph(figure=fig3), dcc.Graph(figure=fig4), "", "Filtre por un año y un mes concreto para visualizar la geolocalización"
+            #for feature in geojson['features']:
+            #   feature['numero'] = sum(1 for index, row in df.iterrows() if row['Via'] == feature['properties']['nombre_via'])
+
+            #if dropdownMes is not None and len(dropdownMes) == 1 and dropdownAnio is not None and len(dropdownAnio) == 1:
+            #filtered_coordinates_df = todaInformacion[ (todaInformacion['LAT'] != 'No informado') & (todaInformacion['LON'] != 'No informado') &(todaInformacion['LAT'].notnull()) &(todaInformacion['LON'].notnull())]
+
+            return geojson, dcc.Graph(figure=fig1), dcc.Graph(figure=fig2), dcc.Graph(figure=fig3), dcc.Graph(figure=fig4),  "", ""
+
         else:
-            tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
-            layer_group = dl.LayerGroup([], id="layer-group")
-            return [tile_layer,layer_group], html.Div([]), html.Div([]), html.Div([]),html.Div([]), "No se dispone de datos para esta combinación de filtros", ""
+            return geojson, html.Div([]), html.Div([]), html.Div([]),html.Div([]), "No se dispone de datos para esta combinación de filtros", ""
         
     except Exception as e:
         print(e)
         traceback.print_exc()
-        tile_layer = dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer")
-        layer_group = dl.LayerGroup([], id="layer-group")
-        return [tile_layer,layer_group], html.Div([]), html.Div([]), html.Div([]), html.Div([]), ["Ha habido un error generando las gráficas", html.Br(), "Inténtelo de nuevo"], ""
+        return geojson, html.Div([]), html.Div([]), html.Div([]), html.Div([]), ["Ha habido un error generando las gráficas", html.Br(), "Inténtelo de nuevo"], ""
 
 def create_graph_1(df, mesSeleccionado, anioSeleccionado):
     if not anioSeleccionado and not mesSeleccionado:
