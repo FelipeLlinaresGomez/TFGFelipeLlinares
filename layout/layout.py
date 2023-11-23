@@ -5,16 +5,16 @@ from dash import dcc, dash_table
 from dash_extensions.javascript import arrow_function, assign
 
 def generar_layout_usuario(geojson):
-    with open('Imagenes/cruz.jpg', 'rb') as f:
+    with open('Resources/cruz.jpg', 'rb') as f:
         cruz = base64.b64encode(f.read()).decode()
 
-    with open('Imagenes/lupa.png', 'rb') as f:
+    with open('Resources/lupa.png', 'rb') as f:
         lupa = base64.b64encode(f.read()).decode()
 
-    with open('Imagenes/approved.png', 'rb') as f:
+    with open('Resources/approved.png', 'rb') as f:
         approved = base64.b64encode(f.read()).decode()
 
-    with open('Imagenes/rejected.png', 'rb') as f:
+    with open('Resources/rejected.png', 'rb') as f:
         rejected = base64.b64encode(f.read()).decode()
 
     return html.Div(
@@ -115,9 +115,9 @@ def generar_layout_usuario(geojson):
 
 def generar_layout_usuario_visualizacion(geojson):
     #Creamos mapa
-    classes = [0, 2, 4, 7, 10, 20, 50, 100]
-    colorscale = ['blue', 'yellow', 'orange', 'red', '#FC4E2A', '#E31A1C', '#BD0026', '#800026']
-    style = dict(weight=2, opacity=1, color='blue', dashArray='', fillOpacity=1)
+    classes = [0, 1, 5, 10, 20, 40, 70, 100]
+    colorscale = ['#008DFC', '#FFF000', '#FFC100', '#FF8D00', '#FF0029', '#660000', '#460459', '#260047']
+    style = dict(weight=2, opacity=1, color='#008DFC', dashArray='', fillOpacity=1)
 
     style_handle = assign("""function(feature, context){
         const {classes, colorscale, style, colorProp} = context.hideout;  // get props from hideout
@@ -303,7 +303,7 @@ def generar_layout_usuario_visualizacion(geojson):
                             dl.Map(
                                 id='map',
                                 center=[36.72043794184044, -4.446592099057205],
-                                zoom=10,
+                                zoom=13,
                                 children=[
                                     dl.TileLayer(url="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile-layer"),
                                     dl.FullScreenControl(),
@@ -312,7 +312,6 @@ def generar_layout_usuario_visualizacion(geojson):
                                     dl.GeoJSON(
                                         data=geojson, 
                                         id='shapefile',
-                                        zoomToBounds=True,  # when true, zooms to bounds when data changes (e.g. on load)
                                         zoomToBoundsOnClick=True,  # when true, zooms to bounds of feature (e.g. calle) on click
                                         options=dict(style=style_handle),
                                         hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp="numero"),
@@ -652,10 +651,10 @@ def generar_header():
     )
 
 def generar_footer():
-    with open('Imagenes/UniversidadMalaga.jpg', 'rb') as f:
+    with open('Resources/UniversidadMalaga.jpg', 'rb') as f:
         logo_uma = base64.b64encode(f.read()).decode()
 
-    with open('Imagenes/ETSIInformatica.jpg', 'rb') as f:
+    with open('Resources/ETSIInformatica.jpg', 'rb') as f:
         logo_etsi = base64.b64encode(f.read()).decode()
 
     return  html.Div(
@@ -674,10 +673,10 @@ def generar_footer():
     )
 
 def generar_footer_bottom():
-    with open('Imagenes/UniversidadMalaga.jpg', 'rb') as f:
+    with open('Resources/UniversidadMalaga.jpg', 'rb') as f:
         logo_uma = base64.b64encode(f.read()).decode()
 
-    with open('Imagenes/ETSIInformatica.jpg', 'rb') as f:
+    with open('Resources/ETSIInformatica.jpg', 'rb') as f:
         logo_etsi = base64.b64encode(f.read()).decode()
 
     return  html.Div(

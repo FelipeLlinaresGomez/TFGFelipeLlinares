@@ -1,0 +1,142 @@
+{
+    "AEROPUERTO": [
+        "AV",
+        "COMANDANTE GARCIA MORATO"
+    ],
+    "AZUCARERA INTELHORCE": [
+        "CTRA",
+        "AZUCARERA-INTELHORCE"
+    ],
+    "PLAZA MAYOR": [
+        "CL",
+        "ALFONSO PONCE DE LEON"
+    ],
+    "PONCE DE LEON": [
+        "CL",
+        "ALFONSO PONCE DE LEON"
+    ],
+    "ESTACION MARIA ZAMBRANO": [
+        "CL",
+        "EXPLANADA DE LA ESTACION"
+    ],
+    "CORTIJO TORRES": [
+        "AV",
+        "NEHEMIAS"
+    ],
+    "CORTIJO DE TORRES": [
+        "AV",
+        "NEHEMIAS"
+    ],
+    "CENTRO COMERCIAL LARIOS": [
+        "CL",
+        "GABRIEL CELAYA"
+    ],
+    "CENTRO COMERCIAL MARIA ZAMBRANO": [
+        "CL",
+        "EXPLANADA DE LA ESTACION"
+    ],
+    "CENTRO COMERCIAL VIALIA": [
+        "CL",
+        "EXPLANADA DE LA ESTACION"
+    ],
+    "JARDINES PUERTA OSCURA": [
+        "CL",
+        "ROMA"
+    ],
+    "MALAGUETA": [
+        "PSO",
+        "MARITIMO PABLO RUIZ PICASSO"
+    ],
+    "LARIOS": [
+        "CL",
+        "MARQUES DE LARIOS"
+    ],
+    "LOS ASPERONES 1": [
+        "CL",
+        "ASPERONES LOS 1"
+    ],
+    "LOS ASPERONES 2": [
+        "CL",
+        "ASPERONES LOS 2"
+    ],
+    "LOS ASPERONES 3": [
+        "CL",
+        "ASPERONES LOS 3"
+    ],
+    "HOSPITAL CLINICO": [
+        "CL",
+        "JIMENEZ FRAUD"
+    ],
+    "MUELLE UNO": [
+        "PSO",
+        "FAROLA"
+    ],
+    "PUERTO DE MALAGA": [
+        "AV",
+        "MANUEL AGUSTIN HEREDIA"
+    ],
+    "MUELLE HEREDIA": [
+        "AV",
+        "MANUEL AGUSTIN HEREDIA"
+    ],
+    "HOSPITAL CIVIL": [
+        "PL",
+        "HOSPITAL CIVIL"
+    ],
+    "JUAN DE LA ENCINA": [
+        "CL",
+        "JUAN DEL ENCINA"
+    ],
+    "ORTEGA Y GASSET": [
+        "AV",
+        "JOSE ORTEGA Y GASSET"
+    ],
+    "CRUZ HUMILLADERO": [
+        "PL",
+        "CRUZ DE HUMILLADERO"
+    ],
+    "RECINTO FERIAL": [
+        "CL",
+        "ANTONIO RODRIGUEZ SANCHEZ"
+    ],
+    "REBOULL": [
+        "CL",
+        "REBOUL"
+    ],
+    "NUESTRA SEÑORA DE CLARINES": [
+        "CL",
+        "NUESTRA SEÑORA DE LOS CLARINES"
+    ],
+    "TOMAS DE HEREDIA": [
+        "CL",
+        "TOMAS HEREDIA"
+    ],
+    "PATO": [
+        "CMNO",
+        "PATO DEL"
+    ],
+    "CARRERA CAPUCHINOS": [
+        "CRRA",
+        "CAPUCHINOS"
+    ],
+    "DE FATIMA": [
+        "AV",
+        "FATIMA"
+    ],
+    "COFRADIAS": [
+        "PL",
+        "COFRADIAS DE LAS"
+    ],
+    "MUSAS": [
+        "AV",
+        "MUSAS DE LAS"
+    ],
+    "MARITIMO ANTONIO MACHADO": [
+        "PSO",
+        "ANTONIO MACHADO"
+    ],
+    "RAMAL COMANDANTE GARCIA MORATO": [
+        "AV",
+        "COMANDANTE GARCIA MORATO"
+    ]
+}

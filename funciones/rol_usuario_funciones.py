@@ -10,7 +10,9 @@ import plotly.io as pio
 from dash import dcc
 from config.db import mydb
 import dash_leaflet as dl
+import funciones.direcciones_helper as direchelper
 from itertools import product
+import json
 
 opciones_tramos = [
     "Mañana", "Tarde", "Noche"
@@ -143,18 +145,31 @@ def generar_figuras(geojson, recarga, dropdownTramo, dropdownMes, dropdownAnio, 
             fig4 = create_graph_4(todaInformacion, mesSeleccionado, anioSeleccionado)
 
             # Create a dictionary mapping street names to their corresponding point counts
-            street_point_counts = {}
-            for index, row in df.iterrows():
-                street_name = row['Via']
-                street_point_counts.setdefault(street_name, 0)
-                street_point_counts[street_name] += 1
 
+            with open('Resources/lugares_famosos.json', 'r') as file:
+                data = json.load(file)
+
+            street_point_counts = {}
+            for index, row in todaInformacion.iterrows():
+                street_name = row['Via']
+
+                lugar_famoso = data.get(street_name)
+                if lugar_famoso is None:
+                    street_type = row['Tipo_via']
+                    key = (street_name, direchelper.map_tipo_via(street_type))
+                else:
+                    key = (lugar_famoso[1], lugar_famoso[0])
+
+                street_point_counts.setdefault(key, 0)
+                street_point_counts[key] += 1
+            
             # Assign point counts to features using the dictionary
             for feature in geojson['features']:
                 street_name = feature['properties']['nombre_via']
-                feature['numero'] = street_point_counts.get(street_name, 0)
+                street_type = feature['properties']['tipo_via_1']
+                key = (street_name, street_type)
+                feature['numero'] = street_point_counts.get(key, 0)
 
-            
             #for feature in geojson['features']:
             #   feature['numero'] = sum(1 for index, row in df.iterrows() if row['Via'] == feature['properties']['nombre_via'])
 
