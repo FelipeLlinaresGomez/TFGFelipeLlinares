@@ -4,7 +4,7 @@ import base64
 from dash import dcc, dash_table
 from dash_extensions.javascript import arrow_function, assign
 
-def generar_layout_usuario(geojson):
+def generar_layout_usuario():
     with open('Resources/cruz.jpg', 'rb') as f:
         cruz = base64.b64encode(f.read()).decode()
 
@@ -53,7 +53,7 @@ def generar_layout_usuario(geojson):
             id='lupa-container',
             style={"margin-bottom": "10px", "display": "flex", "justify-content": "flex-end"}
         ),
-        generar_layout_usuario_visualizacion(geojson),
+        generar_layout_usuario_visualizacion(),
         generar_layout_usuario_filtros(),
         html.Div(
             id='centered-square-box',
@@ -113,7 +113,7 @@ def generar_layout_usuario(geojson):
     style={"background-color": "#fbfbfb", "font-family": "HelveticaNeue, sans-serif", "display": "none"}
 )
 
-def generar_layout_usuario_visualizacion(geojson):
+def generar_layout_usuario_visualizacion():
     #Creamos mapa
     classes = [0, 1, 5, 10, 20, 40, 70, 100]
     colorscale = ['#008DFC', '#FFF000', '#FFC100', '#FF8D00', '#FF0029', '#660000', '#460459', '#260047']
@@ -309,8 +309,7 @@ def generar_layout_usuario_visualizacion(geojson):
                                     dl.FullScreenControl(),
                                     dl.Colorbar(colorscale=colorscale, width=20, height=200, min=0, max=50, position="topright"),
                                     dl.ScaleControl(position="bottomleft"),
-                                    dl.GeoJSON(
-                                        data=geojson, 
+                                    dl.GeoJSON( 
                                         id='shapefile',
                                         zoomToBoundsOnClick=True,  # when true, zooms to bounds of feature (e.g. calle) on click
                                         options=dict(style=style_handle),
