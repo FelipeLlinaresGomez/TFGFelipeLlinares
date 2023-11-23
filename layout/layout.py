@@ -116,8 +116,8 @@ def generar_layout_usuario():
 def generar_layout_usuario_visualizacion():
     #Creamos mapa
     classes = [0, 1, 5, 10, 20, 40, 70, 100]
-    colorscale = ['#008DFC', '#FFF000', '#FFC100', '#FF8D00', '#FF0029', '#660000', '#460459', '#260047']
-    style = dict(weight=2, opacity=1, color='#008DFC', dashArray='', fillOpacity=1)
+    colorscale = ['#BFE1FC', '#FFF000', '#FFC100', '#FF8D00', '#FF0029', '#660000', '#460459', '#260047']
+    style = dict(weight=2, opacity=1, color='#BFE1FC', dashArray='', fillOpacity=1)
 
     style_handle = assign("""function(feature, context){
         const {classes, colorscale, style, colorProp} = context.hideout;  // get props from hideout
